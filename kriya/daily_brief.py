@@ -3,6 +3,28 @@ import json
 import datetime
 import os
 
+from kriya.utils.audit import log_tool_call
+
+
+def run_gws(tool, params):
+    cmd = ["gws", *tool.split("."), "--params", json.dumps(params)]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        data = json.loads(result.stdout)
+        summary = {"type": type(data).__name__}
+        if isinstance(data, dict):
+            if "items" in data:
+                summary["count"] = len(data.get("items", []))
+            if "messages" in data:
+                summary["count"] = len(data.get("messages", []))
+            if "id" in data:
+                summary["id"] = data.get("id")
+        log_tool_call(f"gws.{tool}", params, "ok", summary)
+        return data
+    except Exception as e:
+        log_tool_call(f"gws.{tool}", params, "error", error=str(e))
+        raise
+
 def get_calendar_events(max_results=10):
     """Fetches calendar events using gws CLI, starting from today."""
     # Use timezone-aware UTC datetime
@@ -14,10 +36,8 @@ def get_calendar_events(max_results=10):
         "singleEvents": True,
         "orderBy": "startTime"
     }
-    cmd = ["gws", "calendar", "events", "list", "--params", json.dumps(params)]
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        data = json.loads(result.stdout)
+        data = run_gws("calendar.events.list", params)
         events = data.get("items", [])
         return events
     except Exception as e:
@@ -28,19 +48,16 @@ def get_unread_emails(max_results=5):
     """Fetches unread emails using gws CLI."""
     # Filter out promotions and social to get "real" emails
     q = "is:unread -category:social -category:promotions"
-    cmd = ["gws", "gmail", "users", "messages", "list", "--params", json.dumps({"userId": "me", "maxResults": max_results, "q": q})]
+    params = {"userId": "me", "maxResults": max_results, "q": q}
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        data = json.loads(result.stdout)
+        data = run_gws("gmail.users.messages.list", params)
         message_summaries = data.get("messages", [])
         
         emails = []
         for summary in message_summaries:
             msg_id = summary["id"]
             # Get full message details
-            get_cmd = ["gws", "gmail", "users", "messages", "get", "--params", json.dumps({"userId": "me", "id": msg_id})]
-            get_result = subprocess.run(get_cmd, capture_output=True, text=True, check=True)
-            msg_data = json.loads(get_result.stdout)
+            msg_data = run_gws("gmail.users.messages.get", {"userId": "me", "id": msg_id})
             
             headers = msg_data.get("payload", {}).get("headers", [])
             subject = next((h["value"] for h in headers if h["name"] == "Subject"), "(No Subject)")
