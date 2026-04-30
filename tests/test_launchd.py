@@ -11,4 +11,4 @@ class TestLaunchdTemplate(unittest.TestCase):
         self.assertEqual(data["Label"], "com.savyasachi.kriyaos.daily-brief")
         self.assertEqual(data["StartCalendarInterval"], {"Hour": 7, "Minute": 0})
         self.assertFalse(data["RunAtLoad"])
-        self.assertEqual(data["ProgramArguments"][1:], ["-m", "kriya.daily_brief"])
+        self.assertEqual(data["ProgramArguments"][1:], ["-m", "kriya", "daily-brief"])

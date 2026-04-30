@@ -10,7 +10,8 @@
   <array>
     <string>__PYTHON__</string>
     <string>-m</string>
-    <string>kriya.daily_brief</string>
+    <string>kriya</string>
+    <string>daily-brief</string>
   </array>
 
   <key>WorkingDirectory</key>
