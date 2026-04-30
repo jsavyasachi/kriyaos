@@ -5,7 +5,8 @@ import os
 
 def get_calendar_events(max_results=10):
     """Fetches calendar events using gws CLI, starting from today."""
-    now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+    # Use timezone-aware UTC datetime
+    now = datetime.datetime.now(datetime.UTC).isoformat().replace('+00:00', 'Z')
     params = {
         "calendarId": "primary",
         "maxResults": max_results,
