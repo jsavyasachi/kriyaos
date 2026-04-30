@@ -4,6 +4,7 @@ import datetime
 import os
 
 from kriya.utils.audit import log_tool_call
+from kriya.utils.errors import log_error
 
 
 def run_gws(tool, params):
@@ -41,7 +42,9 @@ def get_calendar_events(max_results=10):
         events = data.get("items", [])
         return events
     except Exception as e:
-        print(f"Error fetching calendar: {e}")
+        message = f"Error fetching calendar: {e}"
+        print(message)
+        log_error("daily_brief.calendar", str(e), {"max_results": max_results})
         return []
 
 def get_unread_emails(max_results=5):
@@ -71,23 +74,13 @@ def get_unread_emails(max_results=5):
             })
         return emails
     except Exception as e:
-        print(f"Error fetching emails: {e}")
+        message = f"Error fetching emails: {e}"
+        print(message)
+        log_error("daily_brief.email", str(e), {"max_results": max_results})
         return []
 
-def generate_daily_brief():
-    today = datetime.date.today().isoformat()
-    state_dir = "state"
-    if not os.path.exists(state_dir):
-        os.makedirs(state_dir)
-    
-    brief_path = os.path.join(state_dir, f"daily-brief-{today}.md")
-    
-    print(f"Generating brief for {today}...")
-    
-    events = get_calendar_events()
-    emails = get_unread_emails()
-    
-    # Format Calendar Section
+
+def format_calendar(events):
     calendar_md = ""
     if events:
         for event in events:
@@ -100,18 +93,25 @@ def generate_daily_brief():
             calendar_md += f"- **{start} {time}**: {summary}\n"
     else:
         calendar_md = "No upcoming events found.\n"
-        
-    # Format Email Section
+    return calendar_md
+
+
+def format_email(emails):
     email_md = ""
     if emails:
         for email in emails:
             email_md += f"- **{email['from']}**: {email['subject']}\n  - *{email['snippet']}*\n"
     else:
         email_md = "No unread emails found.\n"
+    return email_md
 
+
+def build_daily_brief(today, events, emails):
     finance_data = "Finance summary placeholder (Integration with f5e pending)"
-    
-    content = f"""# Daily Brief: {today}
+    calendar_md = format_calendar(events)
+    email_md = format_email(emails)
+
+    return f"""# Daily Brief: {today}
 
 ## 📅 Calendar
 {calendar_md}
@@ -122,11 +122,50 @@ def generate_daily_brief():
 ## 💰 Finance
 {finance_data}
 """
-    
-    with open(brief_path, "w") as f:
+
+
+def run_marker_path(state_dir, today):
+    return os.path.join(state_dir, "runs", f"{today}-daily_brief.json")
+
+
+def write_run_marker(state_dir, today, brief_path):
+    runs_dir = os.path.join(state_dir, "runs")
+    os.makedirs(runs_dir, exist_ok=True)
+    marker = {
+        "completed_at": datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z"),
+        "date": today,
+        "skill": "daily_brief",
+        "status": "completed",
+        "brief_path": brief_path,
+    }
+    with open(run_marker_path(state_dir, today), "w", encoding="utf-8") as f:
+        json.dump(marker, f, indent=2, sort_keys=True)
+        f.write("\n")
+
+
+def generate_daily_brief(state_dir="state", today=None, force=False):
+    today = today or datetime.date.today().isoformat()
+    os.makedirs(state_dir, exist_ok=True)
+
+    brief_path = os.path.join(state_dir, f"daily-brief-{today}.md")
+    marker_path = run_marker_path(state_dir, today)
+
+    if not force and os.path.exists(marker_path):
+        print(f"Daily brief already generated for {today}; skipping.")
+        return brief_path
+
+    print(f"Generating brief for {today}...")
+
+    events = get_calendar_events()
+    emails = get_unread_emails()
+    content = build_daily_brief(today, events, emails)
+
+    with open(brief_path, "w", encoding="utf-8") as f:
         f.write(content)
-    
+    write_run_marker(state_dir, today, brief_path)
+
     print(f"Brief written to {brief_path}")
+    return brief_path
 
 if __name__ == "__main__":
     generate_daily_brief()
