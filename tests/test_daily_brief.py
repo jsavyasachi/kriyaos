@@ -26,6 +26,18 @@ class TestDailyBrief(unittest.TestCase):
         self.assertIn("- **2026-04-30 09:15**: Standup", brief)
         self.assertIn("- **A <a@example.com>**: Hello", brief)
         self.assertIn("Finance summary placeholder", brief)
+        self.assertIn("No recent errors logged.", brief)
+
+    def test_build_daily_brief_formats_errors(self):
+        brief = build_daily_brief(
+            "2026-04-30",
+            [],
+            [],
+            [{"timestamp": "2026-04-30T01:00:00Z", "source": "daily_brief.email", "message": "boom"}],
+        )
+
+        self.assertIn("## ⚠️ Errors", brief)
+        self.assertIn("`daily_brief.email`: boom", brief)
 
     @patch("kriya.daily_brief.get_unread_emails", return_value=[])
     @patch("kriya.daily_brief.get_calendar_events", return_value=[])

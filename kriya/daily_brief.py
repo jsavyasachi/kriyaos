@@ -4,7 +4,7 @@ import datetime
 import os
 
 from kriya.utils.audit import log_tool_call
-from kriya.utils.errors import log_error
+from kriya.utils.errors import log_error, read_recent_errors
 from kriya.utils.usage import cost_ceiling_reached, daily_spend_usd, parse_daily_limit
 
 
@@ -107,10 +107,24 @@ def format_email(emails):
     return email_md
 
 
-def build_daily_brief(today, events, emails):
+def format_errors(errors):
+    if not errors:
+        return "No recent errors logged.\n"
+
+    error_md = ""
+    for error in errors:
+        timestamp = error.get("timestamp", "(unknown time)")
+        source = error.get("source", "(unknown source)")
+        message = error.get("message", "")
+        error_md += f"- **{timestamp}** `{source}`: {message}\n"
+    return error_md
+
+
+def build_daily_brief(today, events, emails, errors=None):
     finance_data = "Finance summary placeholder (Integration with f5e pending)"
     calendar_md = format_calendar(events)
     email_md = format_email(emails)
+    error_md = format_errors(errors or [])
 
     return f"""# Daily Brief: {today}
 
@@ -122,6 +136,9 @@ def build_daily_brief(today, events, emails):
 
 ## 💰 Finance
 {finance_data}
+
+## ⚠️ Errors
+{error_md}
 """
 
 
@@ -172,7 +189,8 @@ def generate_daily_brief(state_dir="state", today=None, force=False):
 
     events = get_calendar_events()
     emails = get_unread_emails()
-    content = build_daily_brief(today, events, emails)
+    errors = read_recent_errors(state_dir)
+    content = build_daily_brief(today, events, emails, errors)
 
     with open(brief_path, "w", encoding="utf-8") as f:
         f.write(content)

@@ -21,3 +21,16 @@ def log_error(
 
     with open(os.path.join(state_dir, "errors.jsonl"), "a", encoding="utf-8") as f:
         f.write(json.dumps(entry, sort_keys=True) + "\n")
+
+
+def read_recent_errors(state_dir: str = "state", limit: int = 5) -> list[dict[str, Any]]:
+    path = os.path.join(state_dir, "errors.jsonl")
+    if not os.path.exists(path):
+        return []
+
+    errors = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                errors.append(json.loads(line))
+    return errors[-limit:]
