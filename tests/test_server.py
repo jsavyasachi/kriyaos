@@ -46,18 +46,3 @@ class TestServerTools(unittest.TestCase):
     def test_approvals_tool(self, mock_list):
         self.assertEqual(server.approvals(), "No pending actions.\n")
         mock_list.assert_called_once_with()
-
-    @patch("kriya.server.daily_brief", return_value="brief")
-    def test_old_daily_brief_alias(self, mock_daily_brief):
-        self.assertEqual(server.get_daily_brief(), "brief")
-        mock_daily_brief.assert_called_once_with()
-
-    @patch("kriya.server.email_triage", return_value="state/inbox.md")
-    def test_old_email_triage_alias(self, mock_email_triage):
-        self.assertEqual(server.triage_email(), "state/inbox.md")
-        mock_email_triage.assert_called_once_with()
-
-    @patch("kriya.server.tasks", return_value="state/tasks.md")
-    def test_old_tasks_alias(self, mock_tasks):
-        self.assertEqual(server.get_tasks(), "state/tasks.md")
-        mock_tasks.assert_called_once_with()

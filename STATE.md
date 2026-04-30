@@ -1,0 +1,122 @@
+# Kriya OS State
+
+This is the durable handoff file for AI coding sessions. Read this before
+touching code. Update it when state, intent, workflow, completed work, blockers,
+or next plans change.
+
+## Current Intent
+
+Build Kriya OS as a read-first personal OS:
+
+- collect state from Gmail, Calendar, Google Tasks, and later Keep/finance
+- write local summaries under `state/`
+- propose actions into `state/pending/*.json`
+- require explicit approval before any external write
+
+Default rule: local files are safe; Google writes are not.
+
+## Workflow
+
+1. Use CLI for deterministic human/script/launchd execution.
+2. Use Goose MCP tools for conversational agent access.
+3. Keep CLI and MCP names conceptually aligned.
+4. Add read-only integrations first.
+5. Proposed writes go to approval queue only.
+6. Deterministic executor comes later and must contain no LLM loop.
+7. Keep `state/` gitignored.
+8. Run `python -m unittest discover` before committing.
+9. Commit with Conventional Commits.
+10. Push only when explicitly asked.
+
+## Current Surfaces
+
+CLI:
+
+- `python -m kriya daily-brief`
+- `python -m kriya email-triage`
+- `python -m kriya tasks`
+- `python -m kriya approvals`
+
+MCP tools:
+
+- `daily_brief`
+- `email_triage`
+- `tasks`
+- `approvals`
+
+## Current Local State Model
+
+- `state/daily-brief-YYYY-MM-DD.md` — daily summary
+- `state/inbox.md` — appended email triage sections
+- `state/tasks-YYYY-MM-DD.md` — Google Tasks snapshot
+- `state/pending/*.json` — approval-gated proposed writes
+- `state/runs/*-daily_brief.json` — daily brief idempotency markers
+- `state/runs/*-email_triage.json` — email triage idempotency markers
+- `state/audit.jsonl` — tool-call audit log
+- `state/errors.jsonl` — failure log surfaced in daily brief
+- `state/usage.jsonl` — cost accounting used by the daily spend guard
+
+## Completed
+
+- AI-native repo setup with shared `AI.md` symlinks.
+- Public GitHub repo.
+- Daily brief generator with Calendar, Gmail, Tasks, errors, and finance placeholder.
+- `gws` audit logging for Workspace tool calls.
+- Error logging and recent-error surfacing in daily brief.
+- Idempotency markers for daily brief and email triage.
+- Cost ceiling guard via `MAX_DAILY_USD`, default `$2.00`.
+- launchd template for daily brief.
+- Read-only email triage into `state/inbox.md`.
+- Read-only Google Tasks snapshot and daily brief Tasks section.
+- Approval queue foundation for proposed writes.
+- Email triage creates local `tasks.insert` proposals for actionable emails.
+- CLI entrypoint.
+- Normalized MCP tools.
+
+## Open Blockers
+
+- Google Keep: `gws` exposes `keep`, but current OAuth token lacks Keep scopes.
+  Re-auth with `https://www.googleapis.com/auth/keep.readonly`, verify
+  `gws keep notes list`, then add Keep read-only summary.
+- Finance: `f5e` integration is still placeholder-only.
+- Launchd is scaffolded but not installed/validated as a real user agent.
+- Approval executor does not exist yet. Pending items cannot be approved into
+  real Google writes.
+
+## Proposed Next Plan
+
+1. Add `python -m kriya poll`.
+   - bounded read-only cycle
+   - refresh tasks
+   - triage email
+   - maybe generate daily brief if not already done
+   - no external writes
+
+2. Add `python -m kriya inbox`.
+   - render latest useful local state
+   - pending approvals
+   - recent errors
+   - tasks summary
+   - last email triage
+
+3. Add approval executor skeleton.
+   - commands: `approve <id>`, `reject <id>`
+   - start with status transitions only
+   - no Google writes until reviewed
+
+4. Add Tasks executor behind approval.
+   - approved `tasks.insert`
+   - idempotency check before write
+   - append audit entry
+
+5. Re-auth Keep and add read-only Keep summary.
+
+6. Integrate `f5e` finance summary.
+
+## Design Notes
+
+- Daily brief is not the OS. It is one scheduled report.
+- `poll` should update state. `inbox` should display state.
+- The approval queue is the safety boundary between read-only intelligence and
+  external writes.
+- Goose should call MCP tools; launchd should call CLI commands.

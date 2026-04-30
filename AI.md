@@ -13,6 +13,7 @@
 
 ## Roadmap / Phases
 - **Phase 1 Target:** `daily_brief` (Read-only summary of calendar, unread emails, and finances). [COMPLETED]
+- **Session Handoff:** Read `STATE.md` first. Update it whenever current state, workflow, blockers, completed work, or next plan changes.
 
 ## Commands
 - **Generate Daily Brief:** `goose run "get my daily brief"`
@@ -27,5 +28,3 @@
 - `email_triage`
 - `tasks`
 - `approvals`
-
-Deprecated aliases kept for compatibility: `get_daily_brief`, `triage_email`, `get_tasks`.

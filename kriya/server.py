@@ -54,28 +54,5 @@ def approvals() -> str:
     return format_pending_actions(list_pending_actions())
 
 
-@mcp.tool()
-def get_daily_brief() -> str:
-    """
-    Deprecated alias for daily_brief.
-    """
-    return daily_brief()
-
-
-@mcp.tool()
-def triage_email() -> str:
-    """
-    Deprecated alias for email_triage.
-    """
-    return email_triage()
-
-
-@mcp.tool()
-def get_tasks() -> str:
-    """
-    Deprecated alias for tasks.
-    """
-    return tasks()
-
 if __name__ == "__main__":
     mcp.run()
