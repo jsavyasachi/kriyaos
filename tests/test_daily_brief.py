@@ -1,5 +1,7 @@
 import json
 import os
+import contextlib
+import io
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -29,7 +31,8 @@ class TestDailyBrief(unittest.TestCase):
     @patch("kriya.daily_brief.get_calendar_events", return_value=[])
     def test_generate_daily_brief_writes_run_marker(self, _calendar, _emails):
         with tempfile.TemporaryDirectory() as state_dir:
-            brief_path = generate_daily_brief(state_dir=state_dir, today="2026-04-30")
+            with contextlib.redirect_stdout(io.StringIO()):
+                brief_path = generate_daily_brief(state_dir=state_dir, today="2026-04-30")
             run_path = os.path.join(state_dir, "runs", "2026-04-30-daily_brief.json")
 
             self.assertTrue(os.path.exists(brief_path))
@@ -49,7 +52,8 @@ class TestDailyBrief(unittest.TestCase):
             with open(os.path.join(runs_dir, "2026-04-30-daily_brief.json"), "w", encoding="utf-8") as f:
                 json.dump({"status": "completed"}, f)
 
-            brief_path = generate_daily_brief(state_dir=state_dir, today="2026-04-30")
+            with contextlib.redirect_stdout(io.StringIO()):
+                brief_path = generate_daily_brief(state_dir=state_dir, today="2026-04-30")
 
         self.assertTrue(brief_path.endswith("daily-brief-2026-04-30.md"))
         mock_calendar.assert_not_called()
@@ -62,7 +66,8 @@ class TestDailyBrief(unittest.TestCase):
             with open(os.path.join(state_dir, "usage.jsonl"), "w", encoding="utf-8") as f:
                 f.write('{"timestamp":"2026-04-30T01:00:00Z","cost_usd":2.0}\n')
 
-            brief_path = generate_daily_brief(state_dir=state_dir, today="2026-04-30")
+            with contextlib.redirect_stdout(io.StringIO()):
+                brief_path = generate_daily_brief(state_dir=state_dir, today="2026-04-30")
 
         self.assertTrue(brief_path.endswith("daily-brief-2026-04-30.md"))
         mock_calendar.assert_not_called()

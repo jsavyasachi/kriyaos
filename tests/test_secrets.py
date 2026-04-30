@@ -3,6 +3,8 @@ from unittest.mock import patch, MagicMock
 import subprocess
 import sys
 import os
+import contextlib
+import io
 
 # Add parent directory to path so we can import kriya
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -37,7 +39,8 @@ class TestGetSecret(unittest.TestCase):
             stderr="Item not found"
         )
         
-        get_secret("bad_item", "password")
+        with contextlib.redirect_stderr(io.StringIO()):
+            get_secret("bad_item", "password")
         
         # Verify it gracefully exits the script with status 1
         mock_exit.assert_called_once_with(1)
