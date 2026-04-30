@@ -21,3 +21,11 @@
 - **Tasks Snapshot CLI:** `python -m kriya tasks`
 - **List Pending Approvals:** `python -m kriya approvals`
 - **Cost Ceiling Override:** `MAX_DAILY_USD=3.50 python -m kriya daily-brief`
+
+## MCP Tools
+- `daily_brief`
+- `email_triage`
+- `tasks`
+- `approvals`
+
+Deprecated aliases kept for compatibility: `get_daily_brief`, `triage_email`, `get_tasks`.

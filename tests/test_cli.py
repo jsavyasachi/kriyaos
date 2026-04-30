@@ -1,3 +1,5 @@
+import contextlib
+import io
 import unittest
 from unittest.mock import patch
 
@@ -65,7 +67,8 @@ class TestCli(unittest.TestCase):
 
     @patch("kriya.cli.list_pending_actions", return_value=[])
     def test_approvals_command(self, mock_list):
-        result = main(["approvals", "--state-dir", "tmp-state"])
+        with contextlib.redirect_stdout(io.StringIO()):
+            result = main(["approvals", "--state-dir", "tmp-state"])
 
         self.assertEqual(result, 0)
         mock_list.assert_called_once_with("tmp-state")
