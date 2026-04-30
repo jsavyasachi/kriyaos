@@ -2,7 +2,7 @@
 
 ## Stack
 - **Runtime:** Goose (Block's open-source MCP-native agent shell)
-- **Memory:** TBD
+- **Memory:** Mem0 (bolt-on memory layer)
 - **Language:** TBD
 
 ## Commands
