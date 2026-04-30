@@ -34,6 +34,28 @@ To switch between Claude, ChatGPT, or Gemini, edit the `config.yaml` file and un
 Phase 1 is now operational. You can trigger the brief with:
 `goose run "get my daily brief"`
 
+## Scheduled Daily Brief
+Phase 2 includes a launchd template at:
+`launchd/com.savyasachi.kriyaos.daily-brief.plist.template`
+
+Install it with absolute local paths:
+
+```bash
+mkdir -p "$HOME/Library/Logs/kriyaos"
+sed \
+  -e "s#__PYTHON__#$(command -v python3)#g" \
+  -e "s#__REPO_PATH__#$(pwd)#g" \
+  -e "s#__STDOUT_LOG__#$HOME/Library/Logs/kriyaos/daily-brief.out.log#g" \
+  -e "s#__STDERR_LOG__#$HOME/Library/Logs/kriyaos/daily-brief.err.log#g" \
+  launchd/com.savyasachi.kriyaos.daily-brief.plist.template \
+  > "$HOME/Library/LaunchAgents/com.savyasachi.kriyaos.daily-brief.plist"
+
+launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.savyasachi.kriyaos.daily-brief.plist"
+```
+
+The job runs at 7:00 AM local time. `daily_brief` is idempotent and skips if
+`state/runs/YYYY-MM-DD-daily_brief.json` already exists.
+
 ## Important Notes
 - All Python scripts MUST use `kriya.utils.secrets.get_secret()` for secrets
 - Never store tokens, keys, or credentials in the repository
