@@ -62,6 +62,7 @@ The job runs at 7:00 AM local time. `daily_brief` is idempotent and skips if
 - The `state/` directory is for runtime data and is .gitignored
 - The daily run aborts when today's `state/usage.jsonl` total reaches `MAX_DAILY_USD` (default: `2.00`)
 - Read-only email triage appends grouped unread mail to `state/inbox.md`: `python -m kriya email-triage`
+- Pending approval-gated actions can be inspected with `python -m kriya approvals`
 - Read-only Google Tasks snapshot writes to `state/tasks-YYYY-MM-DD.md`: `python -m kriya tasks`
 - Google Keep is exposed by `gws`, but needs OAuth re-auth with `keep.readonly` before Kriya can use it.
 - Run tests with: `python -m unittest discover`

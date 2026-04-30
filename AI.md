@@ -19,4 +19,5 @@
 - **Generate Daily Brief CLI:** `python -m kriya daily-brief`
 - **Triage Email CLI:** `python -m kriya email-triage`
 - **Tasks Snapshot CLI:** `python -m kriya tasks`
+- **List Pending Approvals:** `python -m kriya approvals`
 - **Cost Ceiling Override:** `MAX_DAILY_USD=3.50 python -m kriya daily-brief`

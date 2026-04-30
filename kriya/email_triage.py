@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 
+from kriya.approvals import create_pending_action
 from kriya.daily_brief import get_unread_emails
 
 
@@ -47,6 +48,24 @@ AUTOMATED_TERMS = (
     "otp",
 )
 
+ACTION_TERMS = (
+    "please",
+    "can you",
+    "could you",
+    "need",
+    "needs",
+    "follow up",
+    "reply",
+    "respond",
+    "review",
+    "send",
+    "schedule",
+    "book",
+    "confirm",
+    "approve",
+    "action required",
+)
+
 
 def classify_email(email):
     text = " ".join(
@@ -71,6 +90,51 @@ def triage_emails(emails):
     for email in emails:
         triaged[classify_email(email)].append(email)
     return triaged
+
+
+def email_source(email):
+    return "email:" + "|".join(
+        [
+            email.get("from", ""),
+            email.get("subject", ""),
+            email.get("snippet", ""),
+        ]
+    )
+
+
+def is_actionable_email(email, category):
+    text = " ".join(
+        [
+            email.get("subject", ""),
+            email.get("snippet", ""),
+        ]
+    ).lower()
+    if category == "urgent":
+        return True
+    return category == "normal" and any(term in text for term in ACTION_TERMS)
+
+
+def create_task_proposals(triaged, state_dir="state"):
+    paths = []
+    for category, emails in triaged.items():
+        for email in emails:
+            if not is_actionable_email(email, category):
+                continue
+            subject = email.get("subject", "(No Subject)")
+            sender = email.get("from", "(Unknown Sender)")
+            snippet = email.get("snippet", "")
+            title = f"Follow up: {subject}"
+            notes = f"From: {sender}\n\n{snippet}".strip()
+            path = create_pending_action(
+                "tasks.insert",
+                {"tasklist": "@default", "title": title, "notes": notes},
+                "Unread email appears actionable; create a Google Task only after approval.",
+                email_source(email),
+                title,
+                state_dir,
+            )
+            paths.append(path)
+    return paths
 
 
 def format_triage(today, triaged):
@@ -123,6 +187,7 @@ def append_email_triage(state_dir="state", today=None, max_results=10, force=Fal
 
     emails = get_unread_emails(max_results=max_results)
     triaged = triage_emails(emails)
+    proposal_paths = create_task_proposals(triaged, state_dir)
     content = format_triage(today, triaged)
 
     with open(inbox_path, "a", encoding="utf-8") as f:
@@ -130,7 +195,7 @@ def append_email_triage(state_dir="state", today=None, max_results=10, force=Fal
         f.write("\n")
     write_run_marker(state_dir, today, inbox_path)
 
-    print(f"Email triage appended to {inbox_path}")
+    print(f"Email triage appended to {inbox_path}; proposed {len(proposal_paths)} task(s).")
     return inbox_path
 
 

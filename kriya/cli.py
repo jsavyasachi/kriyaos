@@ -1,5 +1,6 @@
 import argparse
 
+from kriya.approvals import format_pending_actions, list_pending_actions
 from kriya.daily_brief import generate_daily_brief
 from kriya.email_triage import append_email_triage
 from kriya.google_tasks import write_tasks_snapshot
@@ -26,6 +27,9 @@ def build_parser():
     tasks.add_argument("--max-lists", type=int, default=10)
     tasks.add_argument("--max-tasks-per-list", type=int, default=20)
 
+    approvals = subparsers.add_parser("approvals", help="List pending approval-gated actions")
+    approvals.add_argument("--state-dir", default="state")
+
     return parser
 
 
@@ -49,6 +53,9 @@ def main(argv=None):
             max_lists=args.max_lists,
             max_tasks_per_list=args.max_tasks_per_list,
         )
+        return 0
+    if args.command == "approvals":
+        print(format_pending_actions(list_pending_actions(args.state_dir)), end="")
         return 0
     return 1
 

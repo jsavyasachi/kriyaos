@@ -6,7 +6,14 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from kriya.email_triage import append_email_triage, classify_email, format_triage, triage_emails
+from kriya.email_triage import (
+    append_email_triage,
+    classify_email,
+    create_task_proposals,
+    format_triage,
+    is_actionable_email,
+    triage_emails,
+)
 
 
 class TestEmailTriage(unittest.TestCase):
@@ -38,6 +45,30 @@ class TestEmailTriage(unittest.TestCase):
 
         self.assertEqual(len(triaged["urgent"]), 1)
         self.assertEqual(len(triaged["normal"]), 1)
+
+    def test_is_actionable_email(self):
+        self.assertTrue(is_actionable_email({"subject": "Security alert", "snippet": ""}, "urgent"))
+        self.assertTrue(is_actionable_email({"subject": "Hello", "snippet": "please review"}, "normal"))
+        self.assertFalse(is_actionable_email({"subject": "Hello", "snippet": "FYI"}, "normal"))
+
+    def test_create_task_proposals_writes_pending_actions(self):
+        with tempfile.TemporaryDirectory() as state_dir:
+            paths = create_task_proposals(
+                {
+                    "urgent": [{"from": "A", "subject": "Security alert", "snippet": "Verify login"}],
+                    "normal": [],
+                    "newsletter": [],
+                    "automated": [],
+                },
+                state_dir,
+            )
+
+            with open(paths[0], encoding="utf-8") as f:
+                item = json.load(f)
+
+        self.assertEqual(len(paths), 1)
+        self.assertEqual(item["tool"], "tasks.insert")
+        self.assertEqual(item["args"]["title"], "Follow up: Security alert")
 
     def test_format_triage_counts_sections(self):
         content = format_triage(

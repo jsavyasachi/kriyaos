@@ -62,3 +62,10 @@ class TestCli(unittest.TestCase):
             max_lists=2,
             max_tasks_per_list=4,
         )
+
+    @patch("kriya.cli.list_pending_actions", return_value=[])
+    def test_approvals_command(self, mock_list):
+        result = main(["approvals", "--state-dir", "tmp-state"])
+
+        self.assertEqual(result, 0)
+        mock_list.assert_called_once_with("tmp-state")

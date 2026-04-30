@@ -232,7 +232,7 @@ The next AI: confirm these three with the user before writing code. Use the [`As
 #### Phase 3 — Approval-gated writes (week 3-4)
 **This is where it gets dangerous. Be careful.**
 
-1. Introduce **approval queue**: `state/pending/{id}.json` for any proposed write action. Each item: `{tool, args, rationale, idempotency_key, expires_at}`.
+1. Introduce **approval queue**: `state/pending/{id}.json` for any proposed write action. Each item: `{tool, args, rationale, idempotency_key, expires_at}`. [FOUNDATION ADDED: deterministic local queue only; no executor yet.]
 2. Build a TUI or simple Web UI (matching runtime — Next.js if Node-based core) that lists pending items and offers `approve | reject | edit`.
 3. Add a **separate "executor"** process — runs only when invoked by approval action; takes the approved item and calls the underlying MCP tool. Executor has **no LLM** in its loop. It's deterministic. This is the prompt-injection containment from H6.
 4. Enable **write tools one at a time, behind feature flags**: start with `calendar.create_event` (low blast radius, easily reversed). Then `gmail.draft` (creates a draft, doesn't send). Only much later — `gmail.send`.
