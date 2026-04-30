@@ -5,6 +5,7 @@ import os
 
 from kriya.utils.audit import log_tool_call
 from kriya.utils.errors import log_error
+from kriya.utils.usage import cost_ceiling_reached, daily_spend_usd, parse_daily_limit
 
 
 def run_gws(tool, params):
@@ -152,6 +153,19 @@ def generate_daily_brief(state_dir="state", today=None, force=False):
 
     if not force and os.path.exists(marker_path):
         print(f"Daily brief already generated for {today}; skipping.")
+        return brief_path
+
+    daily_limit_usd = parse_daily_limit(os.environ.get("MAX_DAILY_USD"))
+    spend_usd = daily_spend_usd(today, state_dir)
+    if not force and cost_ceiling_reached(today, state_dir, daily_limit_usd):
+        message = f"Daily spend ${spend_usd:.2f} reached limit ${daily_limit_usd:.2f}; skipping daily brief."
+        print(message)
+        log_error(
+            "daily_brief.cost_ceiling",
+            message,
+            {"date": today, "limit_usd": daily_limit_usd, "spend_usd": spend_usd},
+            state_dir,
+        )
         return brief_path
 
     print(f"Generating brief for {today}...")

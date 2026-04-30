@@ -60,6 +60,7 @@ The job runs at 7:00 AM local time. `daily_brief` is idempotent and skips if
 - All Python scripts MUST use `kriya.utils.secrets.get_secret()` for secrets
 - Never store tokens, keys, or credentials in the repository
 - The `state/` directory is for runtime data and is .gitignored
+- The daily run aborts when today's `state/usage.jsonl` total reaches `MAX_DAILY_USD` (default: `2.00`)
 - Run tests with: `python -m unittest discover`
 
 ---

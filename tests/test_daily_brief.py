@@ -54,3 +54,16 @@ class TestDailyBrief(unittest.TestCase):
         self.assertTrue(brief_path.endswith("daily-brief-2026-04-30.md"))
         mock_calendar.assert_not_called()
         mock_emails.assert_not_called()
+
+    @patch("kriya.daily_brief.get_unread_emails")
+    @patch("kriya.daily_brief.get_calendar_events")
+    def test_generate_daily_brief_skips_when_cost_ceiling_reached(self, mock_calendar, mock_emails):
+        with tempfile.TemporaryDirectory() as state_dir:
+            with open(os.path.join(state_dir, "usage.jsonl"), "w", encoding="utf-8") as f:
+                f.write('{"timestamp":"2026-04-30T01:00:00Z","cost_usd":2.0}\n')
+
+            brief_path = generate_daily_brief(state_dir=state_dir, today="2026-04-30")
+
+        self.assertTrue(brief_path.endswith("daily-brief-2026-04-30.md"))
+        mock_calendar.assert_not_called()
+        mock_emails.assert_not_called()
