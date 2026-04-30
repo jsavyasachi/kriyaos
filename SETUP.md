@@ -26,25 +26,23 @@
 # (Choose your personal @gmail.com account in the browser)
 ```
 
-### 2. Create and configure a dedicated GCP project for Kriya OS
+### 2. GCP project (REUSING existing — quota was exceeded)
+We are reusing the existing `gen-lang-client-0064921914` ("General API Use") project
+instead of creating a dedicated `kriya-os` project. The project ID is cosmetic;
+the OAuth client config at `~/.config/gws/client_secret.json` is already provisioned
+against this project. No action required here.
+
 ```bash
-# Create new project
-/Users/savya/google-cloud-sdk/bin/gcloud projects create kriya-os --name="Kriya OS"
-
-# Set as active project
-/Users/savya/google-cloud-sdk/bin/gcloud config set project kriya-os
-
-# Verify
+# Confirm active project
 /Users/savya/google-cloud-sdk/bin/gcloud config get-value project
-# Should output: kriya-os
+# Should output: gen-lang-client-0064921914
 ```
 
 ### 3. Set up Google Workspace CLI authentication
 ```bash
-# This will:
-#   - Create OAuth credentials in the kriya-os project
-#   - Enable required APIs (Gmail, Calendar, etc.)
-#   - Perform the final OAuth consent flow in your browser
+# This will reuse the existing client_secret.json and run the OAuth consent
+# flow in your browser. APIs (Gmail, Calendar, Drive, ...) must be enabled
+# on gen-lang-client-0064921914 in the Cloud Console first if not already.
 gws auth setup --login
 ```
 
