@@ -16,4 +16,5 @@
 
 ## Commands
 - **Generate Daily Brief:** `goose run "get my daily brief"`
+- **Triage Email:** `python -m kriya.email_triage`
 - **Cost Ceiling Override:** `MAX_DAILY_USD=3.50 python -m kriya.daily_brief`
