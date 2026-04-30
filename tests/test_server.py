@@ -46,3 +46,13 @@ class TestServerTools(unittest.TestCase):
     def test_approvals_tool(self, mock_list):
         self.assertEqual(server.approvals(), "No pending actions.\n")
         mock_list.assert_called_once_with()
+
+    @patch("kriya.server.run_poll", return_value={"date": "2026-04-30", "tasks": "t", "email_triage": "e", "daily_brief": "d"})
+    def test_poll_tool(self, mock_poll):
+        self.assertIn("Poll complete: 2026-04-30", server.poll())
+        mock_poll.assert_called_once_with()
+
+    @patch("kriya.server.render_inbox", return_value="# Kriya Inbox\n")
+    def test_inbox_tool(self, mock_inbox):
+        self.assertEqual(server.inbox(), "# Kriya Inbox\n")
+        mock_inbox.assert_called_once_with()

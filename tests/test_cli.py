@@ -72,3 +72,19 @@ class TestCli(unittest.TestCase):
 
         self.assertEqual(result, 0)
         mock_list.assert_called_once_with("tmp-state")
+
+    @patch("kriya.cli.run_poll", return_value={"date": "2026-04-30", "tasks": "t", "email_triage": "e", "daily_brief": "d"})
+    def test_poll_command(self, mock_poll):
+        with contextlib.redirect_stdout(io.StringIO()):
+            result = main(["poll", "--state-dir", "tmp-state", "--date", "2026-04-30", "--force"])
+
+        self.assertEqual(result, 0)
+        mock_poll.assert_called_once_with(state_dir="tmp-state", today="2026-04-30", force=True)
+
+    @patch("kriya.cli.render_inbox", return_value="# Kriya Inbox\n")
+    def test_inbox_command(self, mock_inbox):
+        with contextlib.redirect_stdout(io.StringIO()):
+            result = main(["inbox", "--state-dir", "tmp-state"])
+
+        self.assertEqual(result, 0)
+        mock_inbox.assert_called_once_with("tmp-state")

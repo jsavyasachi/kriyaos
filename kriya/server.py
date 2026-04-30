@@ -10,6 +10,8 @@ from kriya.approvals import format_pending_actions, list_pending_actions
 from kriya.daily_brief import build_daily_brief, get_calendar_events, get_unread_emails
 from kriya.email_triage import append_email_triage
 from kriya.google_tasks import write_tasks_snapshot
+from kriya.inbox import render_inbox
+from kriya.poll import format_poll_result, run_poll
 
 # Create an MCP server
 mcp = FastMCP("KriyaOS")
@@ -52,6 +54,22 @@ def approvals() -> str:
     Lists pending approval-gated actions.
     """
     return format_pending_actions(list_pending_actions())
+
+
+@mcp.tool()
+def poll() -> str:
+    """
+    Runs a bounded read-only polling cycle.
+    """
+    return format_poll_result(run_poll())
+
+
+@mcp.tool()
+def inbox() -> str:
+    """
+    Renders current local Kriya OS state.
+    """
+    return render_inbox()
 
 
 if __name__ == "__main__":

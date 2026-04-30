@@ -4,6 +4,8 @@ from kriya.approvals import format_pending_actions, list_pending_actions
 from kriya.daily_brief import generate_daily_brief
 from kriya.email_triage import append_email_triage
 from kriya.google_tasks import write_tasks_snapshot
+from kriya.inbox import render_inbox
+from kriya.poll import format_poll_result, run_poll
 
 
 def build_parser():
@@ -29,6 +31,14 @@ def build_parser():
 
     approvals = subparsers.add_parser("approvals", help="List pending approval-gated actions")
     approvals.add_argument("--state-dir", default="state")
+
+    poll = subparsers.add_parser("poll", help="Run a bounded read-only polling cycle")
+    poll.add_argument("--state-dir", default="state")
+    poll.add_argument("--date")
+    poll.add_argument("--force", action="store_true")
+
+    inbox = subparsers.add_parser("inbox", help="Render local Kriya OS state")
+    inbox.add_argument("--state-dir", default="state")
 
     return parser
 
@@ -56,6 +66,12 @@ def main(argv=None):
         return 0
     if args.command == "approvals":
         print(format_pending_actions(list_pending_actions(args.state_dir)), end="")
+        return 0
+    if args.command == "poll":
+        print(format_poll_result(run_poll(state_dir=args.state_dir, today=args.date, force=args.force)), end="")
+        return 0
+    if args.command == "inbox":
+        print(render_inbox(args.state_dir), end="")
         return 0
     return 1
 

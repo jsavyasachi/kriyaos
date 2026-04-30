@@ -36,6 +36,8 @@ CLI:
 - `python -m kriya email-triage`
 - `python -m kriya tasks`
 - `python -m kriya approvals`
+- `python -m kriya poll`
+- `python -m kriya inbox`
 
 MCP tools:
 
@@ -43,6 +45,8 @@ MCP tools:
 - `email_triage`
 - `tasks`
 - `approvals`
+- `poll`
+- `inbox`
 
 ## Current Local State Model
 
@@ -72,6 +76,8 @@ MCP tools:
 - Email triage creates local `tasks.insert` proposals for actionable emails.
 - CLI entrypoint.
 - Normalized MCP tools.
+- `poll` read-only state update loop.
+- `inbox` local state renderer.
 
 ## Open Blockers
 
@@ -85,33 +91,19 @@ MCP tools:
 
 ## Proposed Next Plan
 
-1. Add `python -m kriya poll`.
-   - bounded read-only cycle
-   - refresh tasks
-   - triage email
-   - maybe generate daily brief if not already done
-   - no external writes
-
-2. Add `python -m kriya inbox`.
-   - render latest useful local state
-   - pending approvals
-   - recent errors
-   - tasks summary
-   - last email triage
-
-3. Add approval executor skeleton.
+1. Add approval executor skeleton.
    - commands: `approve <id>`, `reject <id>`
    - start with status transitions only
    - no Google writes until reviewed
 
-4. Add Tasks executor behind approval.
+2. Add Tasks executor behind approval.
    - approved `tasks.insert`
    - idempotency check before write
    - append audit entry
 
-5. Re-auth Keep and add read-only Keep summary.
+3. Re-auth Keep and add read-only Keep summary.
 
-6. Integrate `f5e` finance summary.
+4. Integrate `f5e` finance summary.
 
 ## Design Notes
 

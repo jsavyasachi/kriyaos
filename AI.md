@@ -21,6 +21,8 @@
 - **Triage Email CLI:** `python -m kriya email-triage`
 - **Tasks Snapshot CLI:** `python -m kriya tasks`
 - **List Pending Approvals:** `python -m kriya approvals`
+- **Poll OS State:** `python -m kriya poll`
+- **Render Inbox:** `python -m kriya inbox`
 - **Cost Ceiling Override:** `MAX_DAILY_USD=3.50 python -m kriya daily-brief`
 
 ## MCP Tools
@@ -28,3 +30,5 @@
 - `email_triage`
 - `tasks`
 - `approvals`
+- `poll`
+- `inbox`
