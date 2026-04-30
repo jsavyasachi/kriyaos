@@ -226,6 +226,8 @@ The next AI: confirm these three with the user before writing code. Use the [`As
 3. Add **cost ceiling**: `state/usage.jsonl` aggregated daily; skill aborts if today's spend > `MAX_DAILY_USD`.
 4. Add **failure handling**: try/catch around every tool call, errors → `state/errors.jsonl`, surface in tomorrow's brief.
 5. Add second skill: `email_triage` — classifies unread emails as {urgent, normal, newsletter, automated} and appends to `state/inbox.md`. Read-only — no archiving, no replies.
+6. Add Google Tasks read-only summary to daily brief and `state/tasks-YYYY-MM-DD.md`; later promote approved email action items into Tasks via approval queue.
+7. Google Keep is supported by `gws`, but current OAuth token lacks Keep scopes. Re-run `gws` auth with `https://www.googleapis.com/auth/keep.readonly`, then add read-only Keep note summary/capture review.
 
 #### Phase 3 — Approval-gated writes (week 3-4)
 **This is where it gets dangerous. Be careful.**

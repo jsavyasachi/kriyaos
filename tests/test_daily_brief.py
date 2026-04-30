@@ -39,6 +39,12 @@ class TestDailyBrief(unittest.TestCase):
         self.assertIn("## ⚠️ Errors", brief)
         self.assertIn("`daily_brief.email`: boom", brief)
 
+    def test_build_daily_brief_formats_tasks(self):
+        brief = build_daily_brief("2026-04-30", [], [], tasks_md="### To Do (1)\n- **Ship**\n")
+
+        self.assertIn("## ✅ Tasks", brief)
+        self.assertIn("- **Ship**", brief)
+
     @patch("kriya.daily_brief.get_unread_emails", return_value=[])
     @patch("kriya.daily_brief.get_calendar_events", return_value=[])
     def test_generate_daily_brief_writes_run_marker(self, _calendar, _emails):

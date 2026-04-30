@@ -8,6 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from mcp.server.fastmcp import FastMCP
 from kriya.daily_brief import build_daily_brief, get_calendar_events, get_unread_emails
 from kriya.email_triage import append_email_triage
+from kriya.google_tasks import write_tasks_snapshot
 
 # Create an MCP server
 mcp = FastMCP("KriyaOS")
@@ -30,6 +31,14 @@ def triage_email() -> str:
     Appends a read-only triage of unread emails to state/inbox.md.
     """
     return append_email_triage()
+
+
+@mcp.tool()
+def get_tasks() -> str:
+    """
+    Writes a read-only Google Tasks snapshot to state/tasks-YYYY-MM-DD.md.
+    """
+    return write_tasks_snapshot()
 
 if __name__ == "__main__":
     mcp.run()

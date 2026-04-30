@@ -38,3 +38,27 @@ class TestCli(unittest.TestCase):
             max_results=3,
             force=True,
         )
+
+    @patch("kriya.cli.write_tasks_snapshot")
+    def test_tasks_command(self, mock_tasks):
+        result = main(
+            [
+                "tasks",
+                "--state-dir",
+                "tmp-state",
+                "--date",
+                "2026-04-30",
+                "--max-lists",
+                "2",
+                "--max-tasks-per-list",
+                "4",
+            ]
+        )
+
+        self.assertEqual(result, 0)
+        mock_tasks.assert_called_once_with(
+            state_dir="tmp-state",
+            today="2026-04-30",
+            max_lists=2,
+            max_tasks_per_list=4,
+        )

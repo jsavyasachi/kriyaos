@@ -120,11 +120,12 @@ def format_errors(errors):
     return error_md
 
 
-def build_daily_brief(today, events, emails, errors=None):
+def build_daily_brief(today, events, emails, errors=None, tasks_md=None):
     finance_data = "Finance summary placeholder (Integration with f5e pending)"
     calendar_md = format_calendar(events)
     email_md = format_email(emails)
     error_md = format_errors(errors or [])
+    tasks_md = tasks_md or "No open tasks found.\n"
 
     return f"""# Daily Brief: {today}
 
@@ -133,6 +134,9 @@ def build_daily_brief(today, events, emails, errors=None):
 
 ## 📧 Email
 {email_md}
+
+## ✅ Tasks
+{tasks_md}
 
 ## 💰 Finance
 {finance_data}
@@ -187,10 +191,13 @@ def generate_daily_brief(state_dir="state", today=None, force=False):
 
     print(f"Generating brief for {today}...")
 
+    from kriya.google_tasks import format_tasks, get_open_tasks
+
     events = get_calendar_events()
     emails = get_unread_emails()
+    tasks_md = format_tasks(get_open_tasks(), today)
     errors = read_recent_errors(state_dir)
-    content = build_daily_brief(today, events, emails, errors)
+    content = build_daily_brief(today, events, emails, errors, tasks_md)
 
     with open(brief_path, "w", encoding="utf-8") as f:
         f.write(content)
