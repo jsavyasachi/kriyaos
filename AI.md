@@ -7,6 +7,7 @@
 
 ## Security & Constraints
 - **Daily Spend Limit:** $2.00 USD (hard kill-switch per day)
+- **Secrets Management:** NO `.env` files. NO hardcoded secrets. All Python scripts MUST fetch secrets at runtime using `kriya.utils.secrets.get_secret("item_name")` which shells out to the 1Password CLI (`op`).
 
 ## Roadmap / Phases
 - **Phase 1 Target:** `daily_brief` (Read-only summary of calendar, unread emails, and finances).
