@@ -8,5 +8,8 @@
 ## Security & Constraints
 - **Daily Spend Limit:** $2.00 USD (hard kill-switch per day)
 
+## Roadmap / Phases
+- **Phase 1 Target:** `daily_brief` (Read-only summary of calendar, unread emails, and finances).
+
 ## Commands
 TBD

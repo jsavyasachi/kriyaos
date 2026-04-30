@@ -1,0 +1,20 @@
+# Secrets
+.env
+secrets/
+
+# State & DB
+*.db
+*.sqlite
+*.sqlite3
+state/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Node (just in case)
+node_modules/
