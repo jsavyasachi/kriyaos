@@ -90,6 +90,19 @@ class TestCreateCalendarEvent(unittest.TestCase):
         self.assertEqual(params["description"], "Annual checkup")
 
 
+class TestInsertTask(unittest.TestCase):
+    @patch("kriya.daily_brief.run_gws")
+    def test_passes_correct_params_to_gws(self, mock_gws):
+        mock_gws.return_value = {"id": "task123", "status": "needsAction"}
+        from kriya.execute import _insert_task
+        _insert_task({"tasklist": "@default", "title": "Follow up", "notes": "Check this"})
+        call_args = mock_gws.call_args
+        self.assertEqual(call_args[0][0], "tasks.tasks.insert")
+        params = call_args[0][1]
+        self.assertEqual(params["title"], "Follow up")
+        self.assertEqual(params["notes"], "Check this")
+
+
 class TestApproveReject(unittest.TestCase):
     def test_approve_sets_status(self):
         with tempfile.TemporaryDirectory() as state_dir:

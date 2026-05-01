@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import re
 
 from kriya.approvals import create_pending_action
 from kriya.daily_brief import get_unread_emails
@@ -46,6 +47,28 @@ AUTOMATED_TERMS = (
     "alert",
     "code",
     "otp",
+)
+
+MEETING_TERMS = (
+    "meet",
+    "meeting",
+    "call",
+    "sync",
+    "catch up",
+    "catchup",
+    "standup",
+    "stand-up",
+    "zoom",
+    "google meet",
+    "teams call",
+    "interview",
+    "calendar invite",
+    "schedule time",
+    "book a time",
+    "find a time",
+    "availability",
+    "let's connect",
+    "lets connect",
 )
 
 ACTION_TERMS = (
@@ -112,6 +135,85 @@ def is_actionable_email(email, category):
     if category == "urgent":
         return True
     return category == "normal" and any(term in text for term in ACTION_TERMS)
+
+
+def is_meeting_request(email):
+    text = " ".join([
+        email.get("subject", ""),
+        email.get("snippet", ""),
+    ]).lower()
+    return any(term in text for term in MEETING_TERMS)
+
+
+def _next_business_day_9am():
+    d = datetime.date.today() + datetime.timedelta(days=1)
+    while d.weekday() >= 5:  # skip weekend
+        d += datetime.timedelta(days=1)
+    return datetime.datetime.combine(d, datetime.time(9, 0))
+
+
+def extract_event_times(email):
+    """Best-effort time extraction from email text. Returns (start_iso, end_iso)."""
+    text = " ".join([email.get("subject", ""), email.get("snippet", "")])
+    try:
+        from dateutil import parser as du_parser
+        from dateutil.parser import ParserError
+
+        # Look for date-like fragments: "May 5", "tomorrow", "next Monday", "5/12 at 3pm"
+        patterns = [
+            r"(?:tomorrow|today)",
+            r"next\s+\w+day",
+            r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2}(?:\s+at\s+[\d:apm ]+)?",
+            r"\b\d{1,2}/\d{1,2}(?:\s+at\s+[\d:apm ]+)?",
+            r"\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*(?:\s+at\s+[\d:apm ]+)?",
+        ]
+        for pat in patterns:
+            m = re.search(pat, text, re.IGNORECASE)
+            if m:
+                candidate = m.group(0)
+                try:
+                    start = du_parser.parse(candidate, default=_next_business_day_9am(), fuzzy=True)
+                    if start < datetime.datetime.now():
+                        start = _next_business_day_9am()
+                    end = start + datetime.timedelta(hours=1)
+                    return start.strftime("%Y-%m-%dT%H:%M:%S"), end.strftime("%Y-%m-%dT%H:%M:%S")
+                except (ParserError, OverflowError):
+                    continue
+    except ImportError:
+        pass
+
+    start = _next_business_day_9am()
+    return start.strftime("%Y-%m-%dT%H:%M:%S"), (start + datetime.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S")
+
+
+def create_event_proposals(triaged, state_dir="state"):
+    paths = []
+    for category, emails in triaged.items():
+        for email in emails:
+            if category not in ("urgent", "normal"):
+                continue
+            if not is_meeting_request(email):
+                continue
+            subject = email.get("subject", "(No Subject)")
+            sender = email.get("from", "(Unknown Sender)")
+            snippet = email.get("snippet", "")
+            start, end = extract_event_times(email)
+            args = {
+                "summary": subject,
+                "start": start,
+                "end": end,
+                "description": f"From: {sender}\n\n{snippet}".strip(),
+            }
+            path = create_pending_action(
+                "calendar.create_event",
+                args,
+                f"Email from {sender} appears to be a meeting request.",
+                email_source(email),
+                f"schedule: {subject}",
+                state_dir,
+            )
+            paths.append(path)
+    return paths
 
 
 def create_task_proposals(triaged, state_dir="state"):
@@ -187,7 +289,8 @@ def append_email_triage(state_dir="state", today=None, max_results=10, force=Fal
 
     emails = get_unread_emails(max_results=max_results)
     triaged = triage_emails(emails)
-    proposal_paths = create_task_proposals(triaged, state_dir)
+    task_paths = create_task_proposals(triaged, state_dir)
+    event_paths = create_event_proposals(triaged, state_dir)
     content = format_triage(today, triaged)
 
     with open(inbox_path, "a", encoding="utf-8") as f:
@@ -195,7 +298,7 @@ def append_email_triage(state_dir="state", today=None, max_results=10, force=Fal
         f.write("\n")
     write_run_marker(state_dir, today, inbox_path)
 
-    print(f"Email triage appended to {inbox_path}; proposed {len(proposal_paths)} task(s).")
+    print(f"Email triage appended to {inbox_path}; proposed {len(task_paths)} task(s), {len(event_paths)} event(s).")
     return inbox_path
 
 
