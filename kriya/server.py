@@ -11,6 +11,9 @@ from kriya.apple_reminders import get_reminders_by_list
 from kriya.daily_brief import build_daily_brief, get_calendar_events, get_unread_emails
 from kriya.email_triage import append_email_triage
 from kriya.google_tasks import format_tasks, get_open_tasks, write_tasks_snapshot
+from kriya.memory import add as memory_add
+from kriya.memory import get_all as memory_get_all
+from kriya.memory import search as memory_search
 from kriya.inbox import render_inbox
 from kriya.poll import format_poll_result, run_poll
 
@@ -76,6 +79,26 @@ def inbox() -> str:
     Renders current local Kriya OS state.
     """
     return render_inbox()
+
+
+@mcp.tool()
+def remember(text: str) -> str:
+    """
+    Stores a memory about the user — preferences, context, facts, recurring patterns.
+    """
+    ok = memory_add(text)
+    return "Remembered." if ok else "Memory store unavailable."
+
+
+@mcp.tool()
+def recall(query: str) -> str:
+    """
+    Searches stored memories relevant to a query.
+    """
+    results = memory_search(query, limit=5)
+    if not results:
+        return "No relevant memories found."
+    return "\n".join(f"- {m}" for m in results)
 
 
 if __name__ == "__main__":

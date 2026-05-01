@@ -132,24 +132,24 @@ def format_errors(errors):
     return error_md
 
 
-def build_daily_brief(today, events, emails, errors=None, tasks_md=None):
+
+def build_daily_brief(today, events, emails, errors=None, tasks_md=None, memories_md=None):
     finance_data = "Finance summary placeholder (Integration with f5e pending)"
     calendar_md = format_calendar(events)
     email_md = format_email(emails)
     error_md = format_errors(errors or [])
     tasks_md = tasks_md or "No open tasks found.\n"
 
-    return f"""# Daily Brief: {today}
+    memory_section = f"\n## 🧠 Memory\n{memories_md}" if memories_md else ""
 
+    return f"""# Daily Brief: {today}
+{memory_section}
 ## 📅 Calendar
 {calendar_md}
-
 ## 📧 Email
 {email_md}
-
 ## ✅ Tasks
 {tasks_md}
-
 ## 💰 Finance
 {finance_data}
 
@@ -205,6 +205,7 @@ def generate_daily_brief(state_dir="state", today=None, force=False):
 
     from kriya.google_tasks import format_tasks, get_open_tasks
     from kriya.apple_reminders import get_reminders_by_list
+    from kriya.memory import format_memories, search as search_memories
 
     events = get_calendar_events()
     emails = get_unread_emails()
@@ -214,7 +215,8 @@ def generate_daily_brief(state_dir="state", today=None, force=False):
         tasks_by_list = tasks_by_list + reminders
     tasks_md = format_tasks(tasks_by_list, today)
     errors = read_recent_errors(state_dir)
-    content = build_daily_brief(today, events, emails, errors, tasks_md)
+    memories_md = format_memories(search_memories("daily preferences context notes", limit=5))
+    content = build_daily_brief(today, events, emails, errors, tasks_md, memories_md)
 
     with open(brief_path, "w", encoding="utf-8") as f:
         f.write(content)

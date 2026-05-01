@@ -40,9 +40,10 @@ class TestDailyBrief(unittest.TestCase):
         self.assertIn("## ✅ Tasks", brief)
         self.assertIn("- **Ship**", brief)
 
+    @patch("kriya.memory.get_client", return_value=None)
     @patch("kriya.daily_brief.get_unread_emails", return_value=[])
     @patch("kriya.daily_brief.get_calendar_events", return_value=[])
-    def test_generate_daily_brief_writes_run_marker(self, _calendar, _emails):
+    def test_generate_daily_brief_writes_run_marker(self, _calendar, _emails, _mem):
         with tempfile.TemporaryDirectory() as state_dir:
             with contextlib.redirect_stdout(io.StringIO()):
                 brief_path = generate_daily_brief(state_dir=state_dir, today="2026-04-30")

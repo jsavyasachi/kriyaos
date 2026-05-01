@@ -5,6 +5,8 @@ from kriya.daily_brief import generate_daily_brief
 from kriya.email_triage import append_email_triage
 from kriya.google_tasks import write_tasks_snapshot
 from kriya.inbox import render_inbox
+from kriya.memory import add as memory_add
+from kriya.memory import get_all as memory_get_all
 from kriya.poll import format_poll_result, run_poll
 
 
@@ -40,6 +42,9 @@ def build_parser():
     inbox = subparsers.add_parser("inbox", help="Render local Kriya OS state")
     inbox.add_argument("--state-dir", default="state")
 
+    memories = subparsers.add_parser("memories", help="List or add stored memories")
+    memories.add_argument("--add", metavar="TEXT", help="Store a new memory")
+
     return parser
 
 
@@ -72,6 +77,18 @@ def main(argv=None):
         return 0
     if args.command == "inbox":
         print(render_inbox(args.state_dir), end="")
+        return 0
+    if args.command == "memories":
+        if args.add:
+            ok = memory_add(args.add)
+            print("Remembered." if ok else "Memory store unavailable.")
+        else:
+            all_mems = memory_get_all()
+            if not all_mems:
+                print("No memories stored.")
+            else:
+                for m in all_mems:
+                    print(f"- {m['memory']}")
         return 0
     return 1
 
