@@ -1,6 +1,6 @@
 import argparse
 
-from kriya.approvals import format_pending_actions, list_pending_actions
+from kriya.approvals import approve_action, format_pending_actions, list_pending_actions, reject_action
 from kriya.daily_brief import generate_daily_brief
 from kriya.email_triage import append_email_triage
 from kriya.google_tasks import write_tasks_snapshot
@@ -45,6 +45,14 @@ def build_parser():
     memories = subparsers.add_parser("memories", help="List or add stored memories")
     memories.add_argument("--add", metavar="TEXT", help="Store a new memory")
 
+    approve = subparsers.add_parser("approve", help="Approve and execute a pending action")
+    approve.add_argument("id", help="Approval ID")
+    approve.add_argument("--state-dir", default="state")
+
+    reject = subparsers.add_parser("reject", help="Reject a pending action")
+    reject.add_argument("id", help="Approval ID")
+    reject.add_argument("--state-dir", default="state")
+
     return parser
 
 
@@ -77,6 +85,24 @@ def main(argv=None):
         return 0
     if args.command == "inbox":
         print(render_inbox(args.state_dir), end="")
+        return 0
+    if args.command == "approve":
+        from kriya.execute import execute_action
+        try:
+            approve_action(args.id, args.state_dir)
+            item = execute_action(args.id, args.state_dir)
+            print(f"Executed: {item['tool']} ({item['id']})")
+        except Exception as e:
+            print(f"Error: {e}")
+            return 1
+        return 0
+    if args.command == "reject":
+        try:
+            reject_action(args.id, args.state_dir)
+            print(f"Rejected: {args.id}")
+        except Exception as e:
+            print(f"Error: {e}")
+            return 1
         return 0
     if args.command == "memories":
         if args.add:

@@ -73,6 +73,30 @@ def list_pending_actions(state_dir: str = "state") -> list[dict[str, Any]]:
     return items
 
 
+def _update_status(approval_id: str, status: str, state_dir: str = "state", **extra) -> dict:
+    path = pending_path(state_dir, approval_id)
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"No pending action found: {approval_id}")
+    with open(path, encoding="utf-8") as f:
+        item = json.load(f)
+    item["status"] = status
+    item.update(extra)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(item, f, indent=2, sort_keys=True)
+        f.write("\n")
+    return item
+
+
+def approve_action(approval_id: str, state_dir: str = "state") -> dict:
+    now = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+    return _update_status(approval_id, "approved", state_dir, approved_at=now)
+
+
+def reject_action(approval_id: str, state_dir: str = "state") -> dict:
+    now = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+    return _update_status(approval_id, "rejected", state_dir, rejected_at=now)
+
+
 def format_pending_actions(items: list[dict[str, Any]]) -> str:
     if not items:
         return "No pending actions.\n"
