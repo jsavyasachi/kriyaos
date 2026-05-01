@@ -21,7 +21,6 @@ Direction is sound. **But the plan has significant holes, missed tooling, and ze
 User's existing assets relevant to this build:
 - `~/projects/ai-dotfiles` — cross-agent config (Claude Code + OpenCode + Gemini CLI), skills/, hooks/, commands/, memory/. Already has the "AI Nativity" symlink rule.
 - `~/projects/f5e` — Kotak/Zerodha finance scraper + analyzer (Python).
-- `~/projects/lorekeeper` — knowledge store (Node/TS, has `bin`, `src`, `templates`).
 - `~/projects/{vitals, folio, mac-battery-cycle-history, SampleChain}` — peripheral.
 - 1Password CLI (`op`) installed and authed via Touch ID — currently unused by megaplan.
 
@@ -87,9 +86,7 @@ This conflates two different things — RAG-style retrieval (Chroma) vs. agent-m
 
 Alternatives: **Mem0** (lightweight memory layer that bolts onto any framework), **LangMem SDK** (if you go LangGraph).
 
-`lorekeeper` should be a *source of facts* (knowledge base the agent reads), not the agent's working memory. They're different concerns.
-
-**Action:** Pick one of {Letta, Mem0, LangMem} for agent memory. Keep `lorekeeper` as a knowledge tool the agent queries, not its memory.
+**Action:** Pick one of {Letta, Mem0, LangMem} for agent memory. `lorekeeper` is a public repo — personal facts must never go there. Mem0 covers both use cases.
 
 ### H6. ZERO security model — biggest hole
 
@@ -184,8 +181,8 @@ The next AI: confirm these three with the user before writing code. Use the [`As
                       │                   │
               ┌───────▼─────────┐   ┌─────▼──────────┐
               │  Memory (Mem0)  │   │  Tool Layer    │
-              │  + lorekeeper   │   │ (gws + MCPs    │
-              │    as a tool    │   │  via gateway)  │
+              │                 │   │ (gws + MCPs    │
+              │                 │   │  via gateway)  │
               └─────────────────┘   └─┬─────────┬───┘
                                       │         │
                                       ▼         ▼
@@ -241,7 +238,7 @@ The next AI: confirm these three with the user before writing code. Use the [`As
 #### Phase 4 — Memory + cross-skill context (week 4+)
 1. Stand up Mem0 (or chosen memory layer). Persist across runs.
 2. Add long-term memories: people, recurring meetings, financial accounts, preferences.
-3. Wire `lorekeeper` as a *tool* (`lore.query`, `lore.add_fact`) — agent uses it for explicit knowledge lookups; memory layer handles implicit recall.
+3. Mem0 handles both explicit knowledge (named facts) and implicit recall — no separate knowledge store needed.
 
 #### Phase 5 — Dashboard (week 6+)
 1. Next.js (if Node) / FastAPI+HTMX (if Python) reading `state/`.
@@ -255,7 +252,6 @@ The next AI: confirm these three with the user before writing code. Use the [`As
 - `/Users/savya/projects/ai-dotfiles/extensions/skills/` — existing skills, pattern reference.
 - `/Users/savya/projects/ai-dotfiles/extensions/hooks/` — hook patterns.
 - `/Users/savya/projects/f5e/AI.md` — to know what `f5e` exposes.
-- `/Users/savya/projects/lorekeeper/AI.md` + `lorekeeper/src/` — to know its API surface.
 - `https://github.com/danielmiessler/Personal_AI_Infrastructure` — PAI v2 README and Releases.
 - `https://goose-docs.ai/` — if OQ-1 lands on Goose.
 
