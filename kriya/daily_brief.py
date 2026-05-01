@@ -27,21 +27,34 @@ def run_gws(tool, params):
         log_tool_call(f"gws.{tool}", params, "error", error=str(e))
         raise
 
+def _normalize_google_event(event):
+    start = event.get("start", {})
+    start_raw = start.get("dateTime") or start.get("date", "")
+    return {
+        "title": event.get("summary", "(No Title)"),
+        "start": start_raw,
+        "all_day": "dateTime" not in start,
+    }
+
+
 def get_calendar_events(max_results=10):
-    """Fetches calendar events using gws CLI, starting from today."""
-    # Use timezone-aware UTC datetime
+    """Fetches today's calendar events. Tries ical (Apple Calendar) first, falls back to gws."""
+    from kriya.apple_calendar import get_events as get_apple_events
+    apple_events = get_apple_events(days=1)
+    if apple_events is not None:
+        return apple_events
+
     now = datetime.datetime.now(datetime.UTC).isoformat().replace('+00:00', 'Z')
     params = {
         "calendarId": "primary",
         "maxResults": max_results,
         "timeMin": now,
         "singleEvents": True,
-        "orderBy": "startTime"
+        "orderBy": "startTime",
     }
     try:
         data = run_gws("calendar.events.list", params)
-        events = data.get("items", [])
-        return events
+        return [_normalize_google_event(e) for e in data.get("items", [])]
     except Exception as e:
         message = f"Error fetching calendar: {e}"
         print(message)
@@ -82,19 +95,18 @@ def get_unread_emails(max_results=5):
 
 
 def format_calendar(events):
-    calendar_md = ""
-    if events:
-        for event in events:
-            start_raw = event.get("start", {}).get("dateTime") or event.get("start", {}).get("date")
-            # Simple cleanup of ISO format for readability
-            start = start_raw.split('T')[0] if 'T' in start_raw else start_raw
-            time = start_raw.split('T')[1][:5] if 'T' in start_raw else "All Day"
-            
-            summary = event.get("summary", "(No Title)")
-            calendar_md += f"- **{start} {time}**: {summary}\n"
-    else:
-        calendar_md = "No upcoming events found.\n"
-    return calendar_md
+    if not events:
+        return "No upcoming events found.\n"
+    lines = []
+    for event in events:
+        start_raw = event.get("start", "")
+        if event.get("all_day") or "T" not in start_raw:
+            date, time_str = start_raw, "All Day"
+        else:
+            date = start_raw.split("T")[0]
+            time_str = start_raw.split("T")[1][:5]
+        lines.append(f"- **{date} {time_str}**: {event.get('title', '(No Title)')}")
+    return "\n".join(lines) + "\n"
 
 
 def format_email(emails):
@@ -192,10 +204,15 @@ def generate_daily_brief(state_dir="state", today=None, force=False):
     print(f"Generating brief for {today}...")
 
     from kriya.google_tasks import format_tasks, get_open_tasks
+    from kriya.apple_reminders import get_reminders_by_list
 
     events = get_calendar_events()
     emails = get_unread_emails()
-    tasks_md = format_tasks(get_open_tasks(), today)
+    tasks_by_list = get_open_tasks()
+    reminders = get_reminders_by_list()
+    if reminders:
+        tasks_by_list = tasks_by_list + reminders
+    tasks_md = format_tasks(tasks_by_list, today)
     errors = read_recent_errors(state_dir)
     content = build_daily_brief(today, events, emails, errors, tasks_md)
 

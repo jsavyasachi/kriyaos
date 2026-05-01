@@ -7,9 +7,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from mcp.server.fastmcp import FastMCP
 from kriya.approvals import format_pending_actions, list_pending_actions
+from kriya.apple_reminders import get_reminders_by_list
 from kriya.daily_brief import build_daily_brief, get_calendar_events, get_unread_emails
 from kriya.email_triage import append_email_triage
-from kriya.google_tasks import write_tasks_snapshot
+from kriya.google_tasks import format_tasks, get_open_tasks, write_tasks_snapshot
 from kriya.inbox import render_inbox
 from kriya.poll import format_poll_result, run_poll
 
@@ -21,7 +22,12 @@ def build_brief_for_today() -> str:
     today = datetime.date.today().isoformat()
     events = get_calendar_events()
     emails = get_unread_emails()
-    return build_daily_brief(today, events, emails)
+    tasks_by_list = get_open_tasks()
+    reminders = get_reminders_by_list()
+    if reminders:
+        tasks_by_list = tasks_by_list + reminders
+    tasks_md = format_tasks(tasks_by_list, today)
+    return build_daily_brief(today, events, emails, tasks_md=tasks_md)
 
 
 @mcp.tool()

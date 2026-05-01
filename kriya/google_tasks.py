@@ -76,6 +76,10 @@ def write_tasks_snapshot(state_dir="state", today=None, max_lists=10, max_tasks_
     today = today or datetime.date.today().isoformat()
     os.makedirs(state_dir, exist_ok=True)
     tasks_by_list = get_open_tasks(max_lists=max_lists, max_tasks_per_list=max_tasks_per_list)
+    from kriya.apple_reminders import get_reminders_by_list
+    reminders = get_reminders_by_list()
+    if reminders:
+        tasks_by_list = tasks_by_list + reminders
     content = f"# Tasks: {today}\n\n{format_tasks(tasks_by_list, today)}"
     path = os.path.join(state_dir, f"tasks-{today}.md")
     with open(path, "w", encoding="utf-8") as f:

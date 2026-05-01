@@ -13,12 +13,7 @@ class TestDailyBrief(unittest.TestCase):
     def test_build_daily_brief_formats_sections(self):
         brief = build_daily_brief(
             "2026-04-30",
-            [
-                {
-                    "start": {"dateTime": "2026-04-30T09:15:00-04:00"},
-                    "summary": "Standup",
-                }
-            ],
+            [{"title": "Standup", "start": "2026-04-30T09:15:00-04:00", "all_day": False}],
             [{"from": "A <a@example.com>", "subject": "Hello", "snippet": "World"}],
         )
 
