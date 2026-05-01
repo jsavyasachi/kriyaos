@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kriyaos"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp[cli]>=1.27",
+    "mem0ai>=2.0",
+    "qdrant-client>=1.17",
+    "sentence-transformers>=5.0",
+]
+
+[project.scripts]
+kriya = "kriya.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["kriya*"]

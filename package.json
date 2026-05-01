@@ -1,0 +1,9 @@
+{
+  "name": "kriyaos",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Personal AI OS",
+  "dependencies": {
+    "gws-mcp-server": "0.1.3"
+  }
+}
