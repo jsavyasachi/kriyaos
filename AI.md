@@ -26,6 +26,10 @@
 - **Poll OS State:** `python -m kriya poll`
 - **Render Inbox:** `python -m kriya inbox`
 - **Cost Ceiling Override:** `MAX_DAILY_USD=3.50 python -m kriya daily-brief`
+- **Lint:** `uv run --extra dev ruff check .`
+- **Test:** `python -m unittest discover`
+- **Finance Path Override:** `KRIYA_F5E_REPO=/path/to/f5e python -m kriya finance`
+- **Vitals Path Override:** `KRIYA_VITALS_DB=/path/to/health.db python -m kriya vitals`
 
 ## MCP Tools
 - `daily_brief`
@@ -36,3 +40,7 @@
 - `approvals`
 - `poll`
 - `inbox`
+
+## Failure Policy
+- Required Google Workspace and Memory integrations fail fast after logging.
+- Finance and vitals remain read-only and render unavailable snapshots when their external data source cannot be read.

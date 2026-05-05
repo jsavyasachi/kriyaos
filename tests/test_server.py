@@ -23,7 +23,7 @@ sys.modules.setdefault("mcp", fake_mcp)
 sys.modules.setdefault("mcp.server", fake_mcp_server)
 sys.modules.setdefault("mcp.server.fastmcp", fake_fastmcp)
 
-from kriya import server
+from kriya import server  # noqa: E402
 
 
 class TestServerTools(unittest.TestCase):
@@ -57,7 +57,17 @@ class TestServerTools(unittest.TestCase):
         self.assertEqual(server.approvals(), "No pending actions.\n")
         mock_list.assert_called_once_with()
 
-    @patch("kriya.server.run_poll", return_value={"date": "2026-04-30", "tasks": "t", "email_triage": "e", "daily_brief": "d"})
+    @patch(
+        "kriya.server.run_poll",
+        return_value={
+            "date": "2026-04-30",
+            "tasks": "t",
+            "finance": "f",
+            "vitals": "v",
+            "email_triage": "e",
+            "daily_brief": "d",
+        },
+    )
     def test_poll_tool(self, mock_poll):
         self.assertIn("Poll complete: 2026-04-30", server.poll())
         mock_poll.assert_called_once_with()

@@ -1,6 +1,5 @@
 import contextlib
 import io
-import os
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -47,3 +46,9 @@ class TestGoogleTasks(unittest.TestCase):
         self.assertTrue(path.endswith("tasks-2026-04-30.md"))
         self.assertIn("# Tasks: 2026-04-30", contents)
         mock_get_open_tasks.assert_called_once_with(max_lists=10, max_tasks_per_list=20)
+
+    @patch("kriya.google_tasks.run_gws", side_effect=RuntimeError("gws CLI not found on PATH"))
+    def test_get_task_lists_raises_when_gws_missing(self, _gws):
+        from kriya.google_tasks import get_task_lists
+        with self.assertRaises(RuntimeError):
+            get_task_lists()

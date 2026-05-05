@@ -11,10 +11,8 @@ def get_task_lists(max_results=100):
         data = run_gws("tasks.tasklists.list", params)
         return data.get("items", [])
     except Exception as e:
-        message = f"Error fetching task lists: {e}"
-        print(message)
         log_error("tasks.tasklists", str(e), {"max_results": max_results})
-        return []
+        raise
 
 
 def get_tasks_for_list(tasklist_id, max_results=20):
@@ -30,10 +28,8 @@ def get_tasks_for_list(tasklist_id, max_results=20):
         data = run_gws("tasks.tasks.list", params)
         return data.get("items", [])
     except Exception as e:
-        message = f"Error fetching tasks for list {tasklist_id}: {e}"
-        print(message)
         log_error("tasks.tasks", str(e), {"tasklist": tasklist_id, "max_results": max_results})
-        return []
+        raise
 
 
 def get_open_tasks(max_lists=10, max_tasks_per_list=20):

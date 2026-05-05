@@ -45,17 +45,29 @@ class TestMemory(unittest.TestCase):
     @patch("kriya.memory.get_client", return_value=None)
     def test_add_returns_false_when_no_client(self, _):
         from kriya.memory import add
-        self.assertFalse(add("anything"))
+        with self.assertRaises(AttributeError):
+            add("anything")
 
     @patch("kriya.memory.get_client", return_value=None)
     def test_search_returns_empty_when_no_client(self, _):
         from kriya.memory import search
-        self.assertEqual(search("anything"), [])
+        with self.assertRaises(AttributeError):
+            search("anything")
 
     @patch("kriya.memory.get_client", return_value=None)
     def test_get_all_returns_empty_when_no_client(self, _):
         from kriya.memory import get_all
-        self.assertEqual(get_all(), [])
+        with self.assertRaises(AttributeError):
+            get_all()
+
+    @patch("kriya.memory.log_error")
+    def test_get_client_raises_on_init_failure(self, _log_error):
+        import kriya.memory as memory
+
+        memory._client = None
+        with patch.dict("sys.modules", {"mem0": None}):
+            with self.assertRaises(ModuleNotFoundError):
+                memory.get_client()
 
 
 class TestFormatMemories(unittest.TestCase):

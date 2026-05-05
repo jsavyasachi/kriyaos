@@ -13,6 +13,11 @@ dependencies = [
     "sentence-transformers>=5.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.8",
+]
+
 [project.scripts]
 kriya = "kriya.cli:main"
 

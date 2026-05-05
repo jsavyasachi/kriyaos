@@ -1,4 +1,3 @@
-import os
 import subprocess
 import tempfile
 import unittest
@@ -33,6 +32,16 @@ class TestFinance(unittest.TestCase):
             text=True,
             check=True,
         )
+
+    @patch.dict("os.environ", {"KRIYA_F5E_REPO": "/tmp/f5e"})
+    @patch("kriya.finance.log_tool_call")
+    @patch("kriya.finance.subprocess.run")
+    def test_get_networth_report_uses_env_repo(self, mock_run, _audit):
+        mock_run.return_value = Mock(stdout="Net worth: $123\n")
+
+        get_networth_report(state_dir="tmp-state")
+
+        self.assertEqual(mock_run.call_args.kwargs["cwd"], "/tmp/f5e")
 
     @patch("kriya.finance.log_error")
     @patch("kriya.finance.log_tool_call")

@@ -1,4 +1,3 @@
-import json
 import os
 import tempfile
 import unittest
@@ -76,7 +75,7 @@ class TestCreateCalendarEvent(unittest.TestCase):
     def test_passes_correct_params_to_gws(self, mock_gws):
         mock_gws.return_value = {"id": "evt123", "status": "confirmed"}
         from kriya.execute import _create_calendar_event
-        result = _create_calendar_event({
+        _create_calendar_event({
             "summary": "Dentist",
             "start": "2026-05-01T10:00:00",
             "end": "2026-05-01T11:00:00",

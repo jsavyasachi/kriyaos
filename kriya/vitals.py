@@ -6,8 +6,11 @@ from kriya.utils.audit import log_tool_call
 from kriya.utils.errors import log_error
 
 
-# TODO(config): make path configurable via env var.
-VITALS_DB = "/Users/savya/projects/vitals/health.db"
+DEFAULT_VITALS_DB = "/Users/savya/projects/vitals/health.db"
+
+
+def vitals_db() -> str:
+    return os.environ.get("KRIYA_VITALS_DB", DEFAULT_VITALS_DB)
 
 
 def _query_sum(con: sqlite3.Connection, record_type: str, day: str) -> float | None:
@@ -50,11 +53,12 @@ def _latest_workout(con: sqlite3.Connection) -> dict | None:
 
 
 def get_vitals_summary(
-    db_path: str = VITALS_DB,
+    db_path: str | None = None,
     today: str | None = None,
     state_dir: str = "state",
 ) -> dict:
     today = today or datetime.date.today().isoformat()
+    db_path = db_path or vitals_db()
     yesterday = (datetime.date.fromisoformat(today) - datetime.timedelta(days=1)).isoformat()
     if not os.path.exists(db_path):
         log_error("vitals", "health.db not found", {"path": db_path}, state_dir)
@@ -124,7 +128,7 @@ def format_vitals_section(summary: dict) -> str:
 def write_vitals_snapshot(
     state_dir: str = "state",
     today: str | None = None,
-    db_path: str = VITALS_DB,
+    db_path: str | None = None,
 ) -> str:
     today = today or datetime.date.today().isoformat()
     os.makedirs(state_dir, exist_ok=True)

@@ -45,7 +45,7 @@ class TestDailyBrief(unittest.TestCase):
     @patch("kriya.finance.get_networth_report", return_value="Net worth: $123")
     @patch("kriya.apple_reminders.get_reminders_by_list", return_value=[])
     @patch("kriya.google_tasks.get_open_tasks", return_value=[])
-    @patch("kriya.memory.get_client", return_value=None)
+    @patch("kriya.memory.search", return_value=[])
     @patch("kriya.daily_brief.get_unread_emails", return_value=[])
     @patch("kriya.daily_brief.get_calendar_events", return_value=[])
     def test_generate_daily_brief_writes_run_marker(self, _calendar, _emails, _mem, _tasks, _reminders, _finance, _vitals):
@@ -91,3 +91,9 @@ class TestDailyBrief(unittest.TestCase):
         self.assertTrue(brief_path.endswith("daily-brief-2026-04-30.md"))
         mock_calendar.assert_not_called()
         mock_emails.assert_not_called()
+
+    @patch("kriya.daily_brief.run_gws", side_effect=RuntimeError("gws CLI not found on PATH"))
+    def test_get_unread_emails_raises_when_gws_missing(self, _gws):
+        from kriya.daily_brief import get_unread_emails
+        with self.assertRaises(RuntimeError):
+            get_unread_emails()

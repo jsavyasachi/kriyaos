@@ -123,6 +123,14 @@ class TestVitals(unittest.TestCase):
         self.assertEqual(summary["resting_hr"], 60)
         self.assertEqual(summary["last_workout"]["activity_type"], "HKWorkoutActivityTypeYoga")
 
+    @patch.dict("os.environ", {"KRIYA_VITALS_DB": "/tmp/health.db"})
+    @patch("kriya.vitals.os.path.exists", return_value=False)
+    @patch("kriya.vitals.log_error")
+    def test_get_vitals_summary_uses_env_db(self, mock_error, _exists):
+        self.assertEqual(get_vitals_summary(today="2026-05-05", state_dir="tmp-state"), {})
+        mock_error.assert_called_once()
+        self.assertEqual(mock_error.call_args.args[2]["path"], "/tmp/health.db")
+
     @patch("kriya.vitals.get_vitals_summary")
     def test_write_vitals_snapshot(self, mock_summary):
         mock_summary.return_value = {

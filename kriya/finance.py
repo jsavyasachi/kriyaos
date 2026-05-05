@@ -6,8 +6,11 @@ from kriya.utils.audit import log_tool_call
 from kriya.utils.errors import log_error
 
 
-# TODO(config): make path configurable via env var.
-F5E_REPO = "/Users/savya/projects/f5e"
+DEFAULT_F5E_REPO = "/Users/savya/projects/f5e"
+
+
+def f5e_repo() -> str:
+    return os.environ.get("KRIYA_F5E_REPO", DEFAULT_F5E_REPO)
 
 
 def get_networth_report(
@@ -24,7 +27,7 @@ def get_networth_report(
         args["inr_per_usd"] = inr_per_usd
 
     try:
-        result = subprocess.run(cmd, cwd=F5E_REPO, capture_output=True, text=True, check=True)
+        result = subprocess.run(cmd, cwd=f5e_repo(), capture_output=True, text=True, check=True)
         log_tool_call("f5e.networth", args, "ok", {"bytes": len(result.stdout)}, state_dir=state_dir)
         return result.stdout.rstrip()
     except subprocess.CalledProcessError as e:

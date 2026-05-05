@@ -25,8 +25,9 @@ Default rule: local files are safe; Google writes are not.
 6. Deterministic executor comes later and must contain no LLM loop.
 7. Keep `state/` gitignored.
 8. Run `python -m unittest discover` before committing.
-9. Commit with Conventional Commits.
-10. Push only when explicitly asked.
+9. Run `uv run --extra dev ruff check .` before committing when lint dependencies are available.
+10. Commit with Conventional Commits.
+11. Push only when explicitly asked.
 
 ## Current Surfaces
 
@@ -86,15 +87,15 @@ MCP tools:
 - `inbox` local state renderer.
 - Read-only `f5e` finance snapshot and daily brief Finance section.
 - Read-only Apple Health vitals snapshot and daily brief Vitals section.
+- `poll` snapshots tasks, finance, vitals, email triage, then daily brief.
+- Finance/vitals paths are configurable with `KRIYA_F5E_REPO` and `KRIYA_VITALS_DB`.
+- Google Workspace and Memory-backed commands fail fast after logging required integration failures.
 
 ## Open Blockers
 
 - Google Keep: `gws` exposes `keep`, but current OAuth token lacks Keep scopes.
   Re-auth with `https://www.googleapis.com/auth/keep.readonly`, verify
   `gws keep notes list`, then add Keep read-only summary.
-- Finance/vitals external repo paths are hardcoded for now:
-  `/Users/savya/projects/f5e` and `/Users/savya/projects/vitals/health.db`.
-  Make them configurable with `KRIYA_F5E_REPO` and `KRIYA_VITALS_DB`.
 - Launchd is scaffolded but not installed/validated as a real user agent.
 - Approval executor does not exist yet. Pending items cannot be approved into
   real Google writes.

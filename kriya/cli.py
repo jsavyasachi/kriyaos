@@ -70,6 +70,14 @@ def build_parser():
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
+    try:
+        return run_command(args)
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
+
+
+def run_command(args):
     if args.command == "daily-brief":
         generate_daily_brief(state_dir=args.state_dir, today=args.date, force=args.force)
         return 0
@@ -111,21 +119,13 @@ def main(argv=None):
         return 0
     if args.command == "approve":
         from kriya.execute import execute_action
-        try:
-            approve_action(args.id, args.state_dir)
-            item = execute_action(args.id, args.state_dir)
-            print(f"Executed: {item['tool']} ({item['id']})")
-        except Exception as e:
-            print(f"Error: {e}")
-            return 1
+        approve_action(args.id, args.state_dir)
+        item = execute_action(args.id, args.state_dir)
+        print(f"Executed: {item['tool']} ({item['id']})")
         return 0
     if args.command == "reject":
-        try:
-            reject_action(args.id, args.state_dir)
-            print(f"Rejected: {args.id}")
-        except Exception as e:
-            print(f"Error: {e}")
-            return 1
+        reject_action(args.id, args.state_dir)
+        print(f"Rejected: {args.id}")
         return 0
     if args.command == "memories":
         if args.add:

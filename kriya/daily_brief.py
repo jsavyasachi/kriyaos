@@ -23,6 +23,10 @@ def run_gws(tool, params):
                 summary["id"] = data.get("id")
         log_tool_call(f"gws.{tool}", params, "ok", summary)
         return data
+    except FileNotFoundError as e:
+        message = "gws CLI not found on PATH"
+        log_tool_call(f"gws.{tool}", params, "error", error=message)
+        raise RuntimeError(message) from e
     except Exception as e:
         log_tool_call(f"gws.{tool}", params, "error", error=str(e))
         raise
@@ -54,12 +58,10 @@ def get_calendar_events(max_results=10):
     }
     try:
         data = run_gws("calendar.events.list", params)
-        return [_normalize_google_event(e) for e in data.get("items", [])]
     except Exception as e:
-        message = f"Error fetching calendar: {e}"
-        print(message)
         log_error("daily_brief.calendar", str(e), {"max_results": max_results})
-        return []
+        raise
+    return [_normalize_google_event(e) for e in data.get("items", [])]
 
 def get_unread_emails(max_results=5):
     """Fetches unread emails using gws CLI."""
@@ -68,30 +70,30 @@ def get_unread_emails(max_results=5):
     params = {"userId": "me", "maxResults": max_results, "q": q}
     try:
         data = run_gws("gmail.users.messages.list", params)
-        message_summaries = data.get("messages", [])
-        
-        emails = []
-        for summary in message_summaries:
-            msg_id = summary["id"]
-            # Get full message details
-            msg_data = run_gws("gmail.users.messages.get", {"userId": "me", "id": msg_id})
-            
-            headers = msg_data.get("payload", {}).get("headers", [])
-            subject = next((h["value"] for h in headers if h["name"] == "Subject"), "(No Subject)")
-            sender = next((h["value"] for h in headers if h["name"] == "From"), "(Unknown Sender)")
-            snippet = msg_data.get("snippet", "")
-            
-            emails.append({
-                "subject": subject,
-                "from": sender,
-                "snippet": snippet
-            })
-        return emails
     except Exception as e:
-        message = f"Error fetching emails: {e}"
-        print(message)
         log_error("daily_brief.email", str(e), {"max_results": max_results})
-        return []
+        raise
+
+    emails = []
+    for summary in data.get("messages", []):
+        msg_id = summary["id"]
+        try:
+            msg_data = run_gws("gmail.users.messages.get", {"userId": "me", "id": msg_id})
+        except Exception as e:
+            log_error("daily_brief.email", str(e), {"message_id": msg_id})
+            raise
+
+        headers = msg_data.get("payload", {}).get("headers", [])
+        subject = next((h["value"] for h in headers if h["name"] == "Subject"), "(No Subject)")
+        sender = next((h["value"] for h in headers if h["name"] == "From"), "(Unknown Sender)")
+        snippet = msg_data.get("snippet", "")
+
+        emails.append({
+            "subject": subject,
+            "from": sender,
+            "snippet": snippet
+        })
+    return emails
 
 
 def format_calendar(events):

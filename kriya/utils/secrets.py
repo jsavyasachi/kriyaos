@@ -1,5 +1,4 @@
 import subprocess
-import json
 import sys
 
 def get_secret(item_name: str, field: str = "credential") -> str:

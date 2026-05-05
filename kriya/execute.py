@@ -8,7 +8,6 @@ import os
 
 from kriya.approvals import pending_path
 from kriya.utils.audit import log_tool_call
-from kriya.utils.errors import log_error
 
 _TOOLS: dict = {}
 

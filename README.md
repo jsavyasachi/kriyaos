@@ -18,3 +18,13 @@ Agentic personal OS.
 - `python -m kriya approvals`
 - `python -m kriya poll`
 - `python -m kriya inbox`
+
+## Configuration
+
+- `KRIYA_F5E_REPO`: f5e repo path, defaults to `/Users/savya/projects/f5e`
+- `KRIYA_VITALS_DB`: Apple Health SQLite path, defaults to `/Users/savya/projects/vitals/health.db`
+
+## Development
+
+- `python -m unittest discover`
+- `uv run --extra dev ruff check .`

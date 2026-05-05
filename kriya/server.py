@@ -13,7 +13,6 @@ from kriya.email_triage import append_email_triage
 from kriya.finance import get_networth_report, write_finance_snapshot
 from kriya.google_tasks import format_tasks, get_open_tasks, write_tasks_snapshot
 from kriya.memory import add as memory_add
-from kriya.memory import get_all as memory_get_all
 from kriya.memory import search as memory_search
 from kriya.inbox import render_inbox
 from kriya.poll import format_poll_result, run_poll
