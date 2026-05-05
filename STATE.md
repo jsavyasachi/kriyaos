@@ -70,6 +70,7 @@ MCP tools:
 - `state/finance-YYYY-MM-DD.md` - f5e net-worth snapshot
 - `state/vitals-YYYY-MM-DD.md` - Apple Health vitals snapshot
 - `state/pending/*.json` - approval-gated proposed writes
+- `state/sync/mappings.json` - Google↔Apple sync ID mappings
 - `state/runs/*-daily_brief.json` - daily brief idempotency markers
 - `state/runs/*-email_triage.json` - email triage idempotency markers
 - `state/audit.jsonl` - tool-call audit log
@@ -104,6 +105,7 @@ MCP tools:
 - Daily brief Keep notes enrichment is optional: missing Keep scope is logged and omitted.
 - Approval executor CLI and MCP tools can approve, reject, and execute approved actions.
 - Approved `tasks.insert` actions execute through the deterministic executor.
+- Pure task sync planner can reconcile normalized Google Tasks and Apple Reminders.
 
 ## Open Blockers
 
@@ -116,7 +118,9 @@ MCP tools:
 
 1. Re-auth Keep and smoke-test `python -m kriya notes`.
 
-2. Add bidirectional Google Tasks ↔ Apple Reminders sync behind the approval queue.
+2. Add Apple Reminders write adapters and Google Tasks update/complete/delete executors.
+
+3. Add `sync-tasks` CLI/MCP command that writes Apple changes inline and queues Google changes.
 
 ## Design Notes
 
