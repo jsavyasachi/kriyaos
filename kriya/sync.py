@@ -73,7 +73,9 @@ def plan_task_sync(
             matched_apple.add(apple["uid"])
             _plan_mapped_pair(row, google, apple, actions)
         elif not google.get("deleted"):
-            actions.append({"type": "create_apple", "source": "google", "task": _task_payload(google)})
+            actions.append(
+                {"type": "create_apple", "source": "google", "google_id": google["id"], "task": _task_payload(google)}
+            )
 
     for apple in apple_tasks:
         apple_uid = apple.get("uid")
@@ -83,7 +85,9 @@ def plan_task_sync(
         rows.append(row)
         matched_apple.add(apple_uid)
         if not apple.get("deleted"):
-            actions.append({"type": "create_google", "source": "apple", "task": _task_payload(apple)})
+            actions.append(
+                {"type": "create_google", "source": "apple", "apple_uid": apple["uid"], "task": _task_payload(apple)}
+            )
 
     return {"actions": actions, "mappings": current}
 
@@ -117,10 +121,10 @@ def _plan_mapped_pair(
 
     if google and not google.get("deleted"):
         row["last_seen_google"] = _updated_at(google)
-        actions.append({"type": "create_apple", "source": "google", "task": _task_payload(google)})
+        actions.append({"type": "create_apple", "source": "google", "google_id": google["id"], "task": _task_payload(google)})
     if apple and not apple.get("deleted"):
         row["last_seen_apple"] = _updated_at(apple)
-        actions.append({"type": "create_google", "source": "apple", "task": _task_payload(apple)})
+        actions.append({"type": "create_google", "source": "apple", "apple_uid": apple["uid"], "task": _task_payload(apple)})
 
 
 def _find_bootstrap_match(

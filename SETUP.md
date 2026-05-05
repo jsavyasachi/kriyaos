@@ -67,6 +67,7 @@ The job runs at 7:00 AM local time. `daily_brief` is idempotent and skips if
 - Google Keep needs OAuth re-auth before first use:
   `gws auth login --scopes https://www.googleapis.com/auth/keep.readonly`
 - Smoke-test Keep with `gws keep notes list`, then write a snapshot with `python -m kriya notes`
+- Sync Google Tasks and Apple Reminders with `python -m kriya sync-tasks`; Google writes land in approvals.
 - `python -m kriya poll` updates local state; `python -m kriya inbox` renders local state.
 - Run tests with: `python -m unittest discover`
 

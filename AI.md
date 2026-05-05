@@ -27,6 +27,7 @@
 - **Approve Pending Action:** `python -m kriya approve <id>`
 - **Execute Approved Action:** `python -m kriya execute <id>`
 - **Reject Pending Action:** `python -m kriya reject <id>`
+- **Sync Tasks:** `python -m kriya sync-tasks`
 - **Poll OS State:** `python -m kriya poll`
 - **Render Inbox:** `python -m kriya inbox`
 - **Cost Ceiling Override:** `MAX_DAILY_USD=3.50 python -m kriya daily-brief`
@@ -46,6 +47,7 @@
 - `approve`
 - `execute`
 - `reject`
+- `sync_tasks`
 - `poll`
 - `inbox`
 

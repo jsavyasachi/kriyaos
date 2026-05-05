@@ -8,6 +8,14 @@ from kriya.utils.errors import log_error
 
 def get_reminders_by_list():
     """Returns incomplete reminders grouped as tasks_by_list, or None if rem is not installed."""
+    raw = get_reminders_raw()
+    if raw is None:
+        return None
+    return _group_by_list(raw)
+
+
+def get_reminders_raw():
+    """Returns raw incomplete reminders from rem, or None if rem is not installed."""
     try:
         result = subprocess.run(
             ["rem", "list", "--incomplete", "-o", "json"],
@@ -15,12 +23,33 @@ def get_reminders_by_list():
         )
         raw = json.loads(result.stdout)
         log_tool_call("rem.list", {"incomplete": True}, "ok", {"count": len(raw)})
-        return _group_by_list(raw)
+        return raw
     except FileNotFoundError:
         return None
     except Exception as e:
         log_error("apple_reminders", str(e), {})
         return []
+
+
+def get_reminders_for_sync():
+    raw = get_reminders_raw()
+    if raw is None:
+        return None
+    return [normalize_reminder_for_sync(item) for item in raw]
+
+
+def normalize_reminder_for_sync(reminder: dict[str, Any]) -> dict[str, Any]:
+    due = reminder.get("due_date") or ""
+    return {
+        "uid": reminder.get("id") or reminder.get("uid"),
+        "list_name": reminder.get("list_name", "Reminders"),
+        "title": reminder.get("name", ""),
+        "due": due[:10] if due else None,
+        "notes": reminder.get("body", ""),
+        "completed": bool(reminder.get("completed", False)),
+        "deleted": bool(reminder.get("deleted", False)),
+        "updated": reminder.get("updated_at") or reminder.get("updated") or reminder.get("modified"),
+    }
 
 
 def _group_by_list(reminders):

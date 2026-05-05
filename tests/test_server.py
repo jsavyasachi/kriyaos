@@ -82,3 +82,17 @@ class TestServerTools(unittest.TestCase):
     def test_inbox_tool(self, mock_inbox):
         self.assertEqual(server.inbox(), "# Kriya Inbox\n")
         mock_inbox.assert_called_once_with()
+
+    @patch(
+        "kriya.server.run_task_sync",
+        return_value={
+            "aborted": False,
+            "action_count": 0,
+            "apple_results": [],
+            "queued_google": [],
+            "mappings": "state/sync/mappings.json",
+        },
+    )
+    def test_sync_tasks_tool(self, mock_sync):
+        self.assertIn("Task sync complete: 0 planned actions", server.sync_tasks())
+        mock_sync.assert_called_once_with()

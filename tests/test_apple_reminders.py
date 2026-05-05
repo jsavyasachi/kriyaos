@@ -41,6 +41,23 @@ class TestAppleReminders(unittest.TestCase):
         task = groups[0]["tasks"][0]
         self.assertEqual(task["due"], "2026-04-30")
 
+    def test_normalize_reminder_for_sync(self):
+        from kriya.apple_reminders import normalize_reminder_for_sync
+
+        task = normalize_reminder_for_sync(
+            self._raw_reminder(
+                name="Buy milk",
+                list_name="Personal",
+                due_date="2026-04-30T09:00:00",
+                body="Whole",
+            )
+        )
+
+        self.assertEqual(task["uid"], "abc123")
+        self.assertEqual(task["list_name"], "Personal")
+        self.assertEqual(task["due"], "2026-04-30")
+        self.assertEqual(task["notes"], "Whole")
+
     @patch("subprocess.run", side_effect=FileNotFoundError)
     def test_returns_none_when_not_installed(self, _):
         from kriya.apple_reminders import get_reminders_by_list

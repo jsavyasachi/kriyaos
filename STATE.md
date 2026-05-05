@@ -43,6 +43,7 @@ CLI:
 - `python -m kriya approve <id>`
 - `python -m kriya execute <id>`
 - `python -m kriya reject <id>`
+- `python -m kriya sync-tasks`
 - `python -m kriya poll`
 - `python -m kriya inbox`
 
@@ -58,6 +59,7 @@ MCP tools:
 - `approve`
 - `execute`
 - `reject`
+- `sync_tasks`
 - `poll`
 - `inbox`
 
@@ -108,6 +110,7 @@ MCP tools:
 - Pure task sync planner can reconcile normalized Google Tasks and Apple Reminders.
 - Google Tasks `update`, `complete`, and `delete` executors are registered.
 - Apple Reminders add/update/complete/delete adapters write through `osascript`.
+- `sync-tasks` writes Apple-side task changes inline and queues Google-side writes for approval.
 
 ## Open Blockers
 
@@ -121,7 +124,7 @@ MCP tools:
 
 1. Re-auth Keep and smoke-test `python -m kriya notes`.
 
-2. Add `sync-tasks` CLI/MCP command that writes Apple changes inline and queues Google changes.
+2. Smoke-test `python -m kriya sync-tasks` against real Reminders permissions.
 
 3. Add Calendar sync after Tasks↔Reminders converges.
 

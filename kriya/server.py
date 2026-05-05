@@ -17,6 +17,7 @@ from kriya.memory import add as memory_add
 from kriya.memory import search as memory_search
 from kriya.inbox import render_inbox
 from kriya.poll import format_poll_result, run_poll
+from kriya.task_sync import format_task_sync_result, run_task_sync
 from kriya.vitals import format_vitals_section, get_vitals_summary, write_vitals_snapshot
 
 # Create an MCP server
@@ -143,6 +144,14 @@ def inbox() -> str:
     Renders current local Kriya OS state.
     """
     return render_inbox()
+
+
+@mcp.tool()
+def sync_tasks() -> str:
+    """
+    Syncs Google Tasks and Apple Reminders, queueing Google writes for approval.
+    """
+    return format_task_sync_result(run_task_sync())
 
 
 @mcp.tool()

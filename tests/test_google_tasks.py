@@ -4,7 +4,14 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from kriya.google_tasks import complete_task, delete_task, format_tasks, update_task, write_tasks_snapshot
+from kriya.google_tasks import (
+    complete_task,
+    delete_task,
+    format_tasks,
+    normalize_task_for_sync,
+    update_task,
+    write_tasks_snapshot,
+)
 
 
 class TestGoogleTasks(unittest.TestCase):
@@ -31,6 +38,25 @@ class TestGoogleTasks(unittest.TestCase):
         self.assertIn("### To Do (1)", content)
         self.assertIn("- **File taxes** due today", content)
         self.assertIn("  - Use official report", content)
+
+    def test_normalize_task_for_sync(self):
+        task = normalize_task_for_sync(
+            {
+                "id": "task123",
+                "title": "File taxes",
+                "due": "2026-05-05T00:00:00.000Z",
+                "notes": "Use report",
+                "status": "completed",
+                "deleted": False,
+                "updated": "2026-05-05T10:00:00Z",
+            },
+            "list123",
+        )
+
+        self.assertEqual(task["id"], "task123")
+        self.assertEqual(task["tasklist"], "list123")
+        self.assertEqual(task["due"], "2026-05-05")
+        self.assertTrue(task["completed"])
 
     @patch("kriya.google_tasks.get_open_tasks")
     def test_write_tasks_snapshot(self, mock_get_open_tasks):

@@ -10,6 +10,7 @@ from kriya.inbox import render_inbox
 from kriya.memory import add as memory_add
 from kriya.memory import get_all as memory_get_all
 from kriya.poll import format_poll_result, run_poll
+from kriya.task_sync import format_task_sync_result, run_task_sync
 from kriya.vitals import write_vitals_snapshot
 
 
@@ -59,6 +60,10 @@ def build_parser():
 
     inbox = subparsers.add_parser("inbox", help="Render local Kriya OS state")
     inbox.add_argument("--state-dir", default="state")
+
+    sync_tasks = subparsers.add_parser("sync-tasks", help="Sync Google Tasks and Apple Reminders")
+    sync_tasks.add_argument("--state-dir", default="state")
+    sync_tasks.add_argument("--action-limit", type=int, default=25)
 
     memories = subparsers.add_parser("memories", help="List or add stored memories")
     memories.add_argument("--add", metavar="TEXT", help="Store a new memory")
@@ -129,6 +134,9 @@ def run_command(args):
         return 0
     if args.command == "inbox":
         print(render_inbox(args.state_dir), end="")
+        return 0
+    if args.command == "sync-tasks":
+        print(format_task_sync_result(run_task_sync(state_dir=args.state_dir, action_limit=args.action_limit)), end="")
         return 0
     if args.command == "approve":
         item = approve_action(args.id, args.state_dir)

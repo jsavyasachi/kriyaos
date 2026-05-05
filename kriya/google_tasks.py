@@ -17,12 +17,12 @@ def get_task_lists(max_results=100):
         raise
 
 
-def get_tasks_for_list(tasklist_id, max_results=20):
+def get_tasks_for_list(tasklist_id, max_results=20, show_completed=False, show_deleted=False):
     params = {
         "tasklist": tasklist_id,
         "maxResults": max_results,
-        "showCompleted": False,
-        "showDeleted": False,
+        "showCompleted": show_completed,
+        "showDeleted": show_deleted,
         "showHidden": False,
         "showAssigned": True,
     }
@@ -40,6 +40,34 @@ def get_open_tasks(max_lists=10, max_tasks_per_list=20):
         tasks = get_tasks_for_list(task_list["id"], max_results=max_tasks_per_list)
         tasks_by_list.append({"list": task_list, "tasks": tasks})
     return tasks_by_list
+
+
+def get_tasks_for_sync(max_lists=10, max_tasks_per_list=100):
+    tasks = []
+    for task_list in get_task_lists(max_results=max_lists):
+        tasklist_id = task_list["id"]
+        for task in get_tasks_for_list(
+            tasklist_id,
+            max_results=max_tasks_per_list,
+            show_completed=True,
+            show_deleted=True,
+        ):
+            tasks.append(normalize_task_for_sync(task, tasklist_id))
+    return tasks
+
+
+def normalize_task_for_sync(task: dict[str, Any], tasklist_id: str = "@default") -> dict[str, Any]:
+    due = task.get("due")
+    return {
+        "id": task.get("id"),
+        "tasklist": tasklist_id,
+        "title": task.get("title", ""),
+        "due": due.split("T")[0] if due else None,
+        "notes": task.get("notes", ""),
+        "completed": task.get("status") == "completed",
+        "deleted": bool(task.get("deleted", False)),
+        "updated": task.get("updated"),
+    }
 
 
 def format_tasks(tasks_by_list, today=None):
