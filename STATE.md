@@ -8,7 +8,7 @@ or next plans change.
 
 Build Kriya OS as a read-first personal OS:
 
-- collect state from Gmail, Calendar, Google Tasks, and later Keep/finance
+- collect state from Gmail, Calendar, Google Tasks, finance, vitals, and later Keep
 - write local summaries under `state/`
 - propose actions into `state/pending/*.json`
 - require explicit approval before any external write
@@ -35,6 +35,8 @@ CLI:
 - `python -m kriya daily-brief`
 - `python -m kriya email-triage`
 - `python -m kriya tasks`
+- `python -m kriya finance`
+- `python -m kriya vitals`
 - `python -m kriya approvals`
 - `python -m kriya poll`
 - `python -m kriya inbox`
@@ -44,6 +46,8 @@ MCP tools:
 - `daily_brief`
 - `email_triage`
 - `tasks`
+- `finance`
+- `vitals`
 - `approvals`
 - `poll`
 - `inbox`
@@ -53,6 +57,8 @@ MCP tools:
 - `state/daily-brief-YYYY-MM-DD.md` - daily summary
 - `state/inbox.md` - appended email triage sections
 - `state/tasks-YYYY-MM-DD.md` - Google Tasks snapshot
+- `state/finance-YYYY-MM-DD.md` - f5e net-worth snapshot
+- `state/vitals-YYYY-MM-DD.md` - Apple Health vitals snapshot
 - `state/pending/*.json` - approval-gated proposed writes
 - `state/runs/*-daily_brief.json` - daily brief idempotency markers
 - `state/runs/*-email_triage.json` - email triage idempotency markers
@@ -64,7 +70,7 @@ MCP tools:
 
 - AI-native repo setup with shared `AI.md` symlinks.
 - Public GitHub repo.
-- Daily brief generator with Calendar, Gmail, Tasks, errors, and finance placeholder.
+- Daily brief generator with Calendar, Gmail, Tasks, finance, vitals, and errors.
 - `gws` audit logging for Workspace tool calls.
 - Error logging and recent-error surfacing in daily brief.
 - Idempotency markers for daily brief and email triage.
@@ -78,13 +84,17 @@ MCP tools:
 - Normalized MCP tools.
 - `poll` read-only state update loop.
 - `inbox` local state renderer.
+- Read-only `f5e` finance snapshot and daily brief Finance section.
+- Read-only Apple Health vitals snapshot and daily brief Vitals section.
 
 ## Open Blockers
 
 - Google Keep: `gws` exposes `keep`, but current OAuth token lacks Keep scopes.
   Re-auth with `https://www.googleapis.com/auth/keep.readonly`, verify
   `gws keep notes list`, then add Keep read-only summary.
-- Finance: `f5e` integration is still placeholder-only.
+- Finance/vitals external repo paths are hardcoded for now:
+  `/Users/savya/projects/f5e` and `/Users/savya/projects/vitals/health.db`.
+  Make them configurable with `KRIYA_F5E_REPO` and `KRIYA_VITALS_DB`.
 - Launchd is scaffolded but not installed/validated as a real user agent.
 - Approval executor does not exist yet. Pending items cannot be approved into
   real Google writes.
@@ -103,7 +113,7 @@ MCP tools:
 
 3. Re-auth Keep and add read-only Keep summary.
 
-4. Integrate `f5e` finance summary.
+4. Add Keep read-only summary once OAuth scopes are fixed.
 
 ## Design Notes
 

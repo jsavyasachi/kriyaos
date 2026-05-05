@@ -42,6 +42,16 @@ class TestServerTools(unittest.TestCase):
         self.assertEqual(server.tasks(), "state/tasks.md")
         mock_tasks.assert_called_once_with()
 
+    @patch("kriya.server.write_finance_snapshot", return_value="state/finance.md")
+    def test_finance_tool(self, mock_finance):
+        self.assertEqual(server.finance(display="INR", inr_per_usd=83.2), "state/finance.md")
+        mock_finance.assert_called_once_with(display="INR", inr_per_usd=83.2)
+
+    @patch("kriya.server.write_vitals_snapshot", return_value="state/vitals.md")
+    def test_vitals_tool(self, mock_vitals):
+        self.assertEqual(server.vitals(), "state/vitals.md")
+        mock_vitals.assert_called_once_with()
+
     @patch("kriya.server.list_pending_actions", return_value=[])
     def test_approvals_tool(self, mock_list):
         self.assertEqual(server.approvals(), "No pending actions.\n")

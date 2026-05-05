@@ -65,6 +65,37 @@ class TestCli(unittest.TestCase):
             max_tasks_per_list=4,
         )
 
+    @patch("kriya.cli.write_finance_snapshot")
+    def test_finance_command(self, mock_finance):
+        result = main(
+            [
+                "finance",
+                "--state-dir",
+                "tmp-state",
+                "--date",
+                "2026-05-05",
+                "--display",
+                "INR",
+                "--inr-per-usd",
+                "83.2",
+            ]
+        )
+
+        self.assertEqual(result, 0)
+        mock_finance.assert_called_once_with(
+            state_dir="tmp-state",
+            today="2026-05-05",
+            display="INR",
+            inr_per_usd=83.2,
+        )
+
+    @patch("kriya.cli.write_vitals_snapshot")
+    def test_vitals_command(self, mock_vitals):
+        result = main(["vitals", "--state-dir", "tmp-state", "--date", "2026-05-05"])
+
+        self.assertEqual(result, 0)
+        mock_vitals.assert_called_once_with(state_dir="tmp-state", today="2026-05-05")
+
     @patch("kriya.cli.list_pending_actions", return_value=[])
     def test_approvals_command(self, mock_list):
         with contextlib.redirect_stdout(io.StringIO()):

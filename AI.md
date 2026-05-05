@@ -20,6 +20,8 @@
 - **Generate Daily Brief CLI:** `python -m kriya daily-brief`
 - **Triage Email CLI:** `python -m kriya email-triage`
 - **Tasks Snapshot CLI:** `python -m kriya tasks`
+- **Finance Snapshot CLI:** `python -m kriya finance`
+- **Vitals Snapshot CLI:** `python -m kriya vitals`
 - **List Pending Approvals:** `python -m kriya approvals`
 - **Poll OS State:** `python -m kriya poll`
 - **Render Inbox:** `python -m kriya inbox`
@@ -29,6 +31,8 @@
 - `daily_brief`
 - `email_triage`
 - `tasks`
+- `finance`
+- `vitals`
 - `approvals`
 - `poll`
 - `inbox`

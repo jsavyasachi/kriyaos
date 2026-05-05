@@ -10,12 +10,14 @@ from kriya.approvals import format_pending_actions, list_pending_actions
 from kriya.apple_reminders import get_reminders_by_list
 from kriya.daily_brief import build_daily_brief, get_calendar_events, get_unread_emails
 from kriya.email_triage import append_email_triage
+from kriya.finance import get_networth_report, write_finance_snapshot
 from kriya.google_tasks import format_tasks, get_open_tasks, write_tasks_snapshot
 from kriya.memory import add as memory_add
 from kriya.memory import get_all as memory_get_all
 from kriya.memory import search as memory_search
 from kriya.inbox import render_inbox
 from kriya.poll import format_poll_result, run_poll
+from kriya.vitals import format_vitals_section, get_vitals_summary, write_vitals_snapshot
 
 # Create an MCP server
 mcp = FastMCP("KriyaOS")
@@ -30,7 +32,16 @@ def build_brief_for_today() -> str:
     if reminders:
         tasks_by_list = tasks_by_list + reminders
     tasks_md = format_tasks(tasks_by_list, today)
-    return build_daily_brief(today, events, emails, tasks_md=tasks_md)
+    finance_md = get_networth_report()
+    vitals_md = format_vitals_section(get_vitals_summary())
+    return build_daily_brief(
+        today,
+        events,
+        emails,
+        tasks_md=tasks_md,
+        finance_md=finance_md,
+        vitals_md=vitals_md,
+    )
 
 
 @mcp.tool()
@@ -55,6 +66,22 @@ def tasks() -> str:
     Writes a read-only Google Tasks snapshot to state/tasks-YYYY-MM-DD.md.
     """
     return write_tasks_snapshot()
+
+
+@mcp.tool()
+def finance(display: str = "USD", inr_per_usd: float | None = None) -> str:
+    """
+    Writes an f5e net-worth snapshot to state/finance-YYYY-MM-DD.md.
+    """
+    return write_finance_snapshot(display=display, inr_per_usd=inr_per_usd)
+
+
+@mcp.tool()
+def vitals() -> str:
+    """
+    Writes an Apple Health vitals snapshot to state/vitals-YYYY-MM-DD.md.
+    """
+    return write_vitals_snapshot()
 
 
 @mcp.tool()

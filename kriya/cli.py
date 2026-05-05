@@ -3,11 +3,13 @@ import argparse
 from kriya.approvals import approve_action, format_pending_actions, list_pending_actions, reject_action
 from kriya.daily_brief import generate_daily_brief
 from kriya.email_triage import append_email_triage
+from kriya.finance import write_finance_snapshot
 from kriya.google_tasks import write_tasks_snapshot
 from kriya.inbox import render_inbox
 from kriya.memory import add as memory_add
 from kriya.memory import get_all as memory_get_all
 from kriya.poll import format_poll_result, run_poll
+from kriya.vitals import write_vitals_snapshot
 
 
 def build_parser():
@@ -30,6 +32,16 @@ def build_parser():
     tasks.add_argument("--date")
     tasks.add_argument("--max-lists", type=int, default=10)
     tasks.add_argument("--max-tasks-per-list", type=int, default=20)
+
+    finance = subparsers.add_parser("finance", help="Snapshot f5e net-worth report")
+    finance.add_argument("--state-dir", default="state")
+    finance.add_argument("--date")
+    finance.add_argument("--display", default="USD")
+    finance.add_argument("--inr-per-usd", type=float, default=None)
+
+    vitals = subparsers.add_parser("vitals", help="Snapshot Apple Health vitals")
+    vitals.add_argument("--state-dir", default="state")
+    vitals.add_argument("--date")
 
     approvals = subparsers.add_parser("approvals", help="List pending approval-gated actions")
     approvals.add_argument("--state-dir", default="state")
@@ -76,6 +88,17 @@ def main(argv=None):
             max_lists=args.max_lists,
             max_tasks_per_list=args.max_tasks_per_list,
         )
+        return 0
+    if args.command == "finance":
+        write_finance_snapshot(
+            state_dir=args.state_dir,
+            today=args.date,
+            display=args.display,
+            inr_per_usd=args.inr_per_usd,
+        )
+        return 0
+    if args.command == "vitals":
+        write_vitals_snapshot(state_dir=args.state_dir, today=args.date)
         return 0
     if args.command == "approvals":
         print(format_pending_actions(list_pending_actions(args.state_dir)), end="")
