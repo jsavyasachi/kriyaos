@@ -8,7 +8,7 @@ or next plans change.
 
 Build Kriya OS as a read-first personal OS:
 
-- collect state from Gmail, Calendar, Google Tasks, finance, vitals, and later Keep
+- collect state from Gmail, Calendar, Google Tasks, Keep, finance, and vitals
 - write local summaries under `state/`
 - propose actions into `state/pending/*.json`
 - require explicit approval before any external write
@@ -36,6 +36,7 @@ CLI:
 - `python -m kriya daily-brief`
 - `python -m kriya email-triage`
 - `python -m kriya tasks`
+- `python -m kriya notes`
 - `python -m kriya finance`
 - `python -m kriya vitals`
 - `python -m kriya approvals`
@@ -50,6 +51,7 @@ MCP tools:
 - `daily_brief`
 - `email_triage`
 - `tasks`
+- `notes`
 - `finance`
 - `vitals`
 - `approvals`
@@ -64,6 +66,7 @@ MCP tools:
 - `state/daily-brief-YYYY-MM-DD.md` - daily summary
 - `state/inbox.md` - appended email triage sections
 - `state/tasks-YYYY-MM-DD.md` - Google Tasks snapshot
+- `state/notes-YYYY-MM-DD.md` - Google Keep notes snapshot
 - `state/finance-YYYY-MM-DD.md` - f5e net-worth snapshot
 - `state/vitals-YYYY-MM-DD.md` - Apple Health vitals snapshot
 - `state/pending/*.json` - approval-gated proposed writes
@@ -85,6 +88,7 @@ MCP tools:
 - launchd template for daily brief.
 - Read-only email triage into `state/inbox.md`.
 - Read-only Google Tasks snapshot and daily brief Tasks section.
+- Read-only Google Keep notes snapshot and optional daily brief Notes section.
 - Approval queue foundation for proposed writes.
 - Email triage creates local `tasks.insert` proposals for actionable emails.
 - CLI entrypoint.
@@ -93,27 +97,26 @@ MCP tools:
 - `inbox` local state renderer.
 - Read-only `f5e` finance snapshot and daily brief Finance section.
 - Read-only Apple Health vitals snapshot and daily brief Vitals section.
-- `poll` snapshots tasks, finance, vitals, email triage, then daily brief.
+- `poll` snapshots tasks, notes, finance, vitals, email triage, then daily brief.
 - Finance/vitals paths are configurable with `KRIYA_F5E_REPO` and `KRIYA_VITALS_DB`.
 - Google Workspace and Memory-backed commands fail fast after logging required integration failures.
 - Daily brief Memory enrichment is optional: broken Mem0 lookup is logged and omitted.
+- Daily brief Keep notes enrichment is optional: missing Keep scope is logged and omitted.
 - Approval executor CLI and MCP tools can approve, reject, and execute approved actions.
 - Approved `tasks.insert` actions execute through the deterministic executor.
 
 ## Open Blockers
 
-- Google Keep: `gws` exposes `keep`, but current OAuth token lacks Keep scopes.
-  Re-auth with `https://www.googleapis.com/auth/keep.readonly`, verify
-  `gws keep notes list`, then add Keep read-only summary.
+- Google Keep: current OAuth token may still lack Keep scopes.
+  Re-auth with `https://www.googleapis.com/auth/keep.readonly`, then verify
+  `gws keep notes list` and `python -m kriya notes`.
 - Launchd is scaffolded but not installed/validated as a real user agent.
 
 ## Proposed Next Plan
 
-1. Re-auth Keep and add read-only Keep summary.
+1. Re-auth Keep and smoke-test `python -m kriya notes`.
 
-2. Add Keep read-only summary once OAuth scopes are fixed.
-
-3. Add bidirectional Google Tasks ↔ Apple Reminders sync behind the approval queue.
+2. Add bidirectional Google Tasks ↔ Apple Reminders sync behind the approval queue.
 
 ## Design Notes
 

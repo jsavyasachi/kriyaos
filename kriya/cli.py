@@ -4,6 +4,7 @@ from kriya.approvals import approve_action, format_pending_actions, list_pending
 from kriya.daily_brief import generate_daily_brief
 from kriya.email_triage import append_email_triage
 from kriya.finance import write_finance_snapshot
+from kriya.google_keep import write_notes_snapshot
 from kriya.google_tasks import write_tasks_snapshot
 from kriya.inbox import render_inbox
 from kriya.memory import add as memory_add
@@ -32,6 +33,11 @@ def build_parser():
     tasks.add_argument("--date")
     tasks.add_argument("--max-lists", type=int, default=10)
     tasks.add_argument("--max-tasks-per-list", type=int, default=20)
+
+    notes = subparsers.add_parser("notes", help="Write a read-only Google Keep notes snapshot")
+    notes.add_argument("--state-dir", default="state")
+    notes.add_argument("--date")
+    notes.add_argument("--page-size", type=int, default=20)
 
     finance = subparsers.add_parser("finance", help="Snapshot f5e net-worth report")
     finance.add_argument("--state-dir", default="state")
@@ -100,6 +106,9 @@ def run_command(args):
             max_lists=args.max_lists,
             max_tasks_per_list=args.max_tasks_per_list,
         )
+        return 0
+    if args.command == "notes":
+        write_notes_snapshot(state_dir=args.state_dir, today=args.date, page_size=args.page_size)
         return 0
     if args.command == "finance":
         write_finance_snapshot(

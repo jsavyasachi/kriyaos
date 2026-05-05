@@ -20,6 +20,7 @@
 - **Generate Daily Brief CLI:** `python -m kriya daily-brief`
 - **Triage Email CLI:** `python -m kriya email-triage`
 - **Tasks Snapshot CLI:** `python -m kriya tasks`
+- **Notes Snapshot CLI:** `python -m kriya notes`
 - **Finance Snapshot CLI:** `python -m kriya finance`
 - **Vitals Snapshot CLI:** `python -m kriya vitals`
 - **List Pending Approvals:** `python -m kriya approvals`
@@ -38,6 +39,7 @@
 - `daily_brief`
 - `email_triage`
 - `tasks`
+- `notes`
 - `finance`
 - `vitals`
 - `approvals`

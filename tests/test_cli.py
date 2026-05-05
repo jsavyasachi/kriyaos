@@ -65,6 +65,27 @@ class TestCli(unittest.TestCase):
             max_tasks_per_list=4,
         )
 
+    @patch("kriya.cli.write_notes_snapshot")
+    def test_notes_command(self, mock_notes):
+        result = main(
+            [
+                "notes",
+                "--state-dir",
+                "tmp-state",
+                "--date",
+                "2026-05-05",
+                "--page-size",
+                "3",
+            ]
+        )
+
+        self.assertEqual(result, 0)
+        mock_notes.assert_called_once_with(
+            state_dir="tmp-state",
+            today="2026-05-05",
+            page_size=3,
+        )
+
     @patch("kriya.cli.write_finance_snapshot")
     def test_finance_command(self, mock_finance):
         result = main(
@@ -109,6 +130,7 @@ class TestCli(unittest.TestCase):
         return_value={
             "date": "2026-04-30",
             "tasks": "t",
+            "notes": "n",
             "finance": "f",
             "vitals": "v",
             "email_triage": "e",

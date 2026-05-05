@@ -21,6 +21,8 @@ def run_gws(tool, params):
                 summary["count"] = len(data.get("items", []))
             if "messages" in data:
                 summary["count"] = len(data.get("messages", []))
+            if "notes" in data:
+                summary["count"] = len(data.get("notes", []))
             if "id" in data:
                 summary["id"] = data.get("id")
         log_tool_call(f"gws.{tool}", params, "ok", summary)
@@ -156,6 +158,7 @@ def build_daily_brief(
     memories_md=None,
     finance_md=None,
     vitals_md=None,
+    notes_md=None,
 ):
     calendar_md = format_calendar(events)
     email_md = format_email(emails)
@@ -165,6 +168,7 @@ def build_daily_brief(
     vitals_md = vitals_md or "Vitals unavailable.\n"
 
     memory_section = f"\n## 🧠 Memory\n{memories_md}" if memories_md else ""
+    notes_section = f"## 📝 Notes\n{notes_md}" if notes_md else ""
 
     return f"""# Daily Brief: {today}
 {memory_section}
@@ -174,6 +178,7 @@ def build_daily_brief(
 {email_md}
 ## ✅ Tasks
 {tasks_md}
+{notes_section}
 ## 💰 Finance
 {finance_md}
 ## ❤️ Vitals
@@ -232,6 +237,7 @@ def generate_daily_brief(state_dir="state", today=None, force=False):
     from kriya.google_tasks import format_tasks, get_open_tasks
     from kriya.apple_reminders import get_reminders_by_list
     from kriya.finance import format_finance_section, get_networth_report
+    from kriya.google_keep import get_notes_section
     from kriya.vitals import format_vitals_section, get_vitals_summary
 
     events = get_calendar_events()
@@ -243,9 +249,10 @@ def generate_daily_brief(state_dir="state", today=None, force=False):
     tasks_md = format_tasks(tasks_by_list, today)
     errors = read_recent_errors(state_dir)
     memories_md = get_daily_memories_md(state_dir)
+    notes_md = get_notes_section(state_dir=state_dir)
     finance_md = format_finance_section(get_networth_report(state_dir=state_dir))
     vitals_md = format_vitals_section(get_vitals_summary(today=today, state_dir=state_dir))
-    content = build_daily_brief(today, events, emails, errors, tasks_md, memories_md, finance_md, vitals_md)
+    content = build_daily_brief(today, events, emails, errors, tasks_md, memories_md, finance_md, vitals_md, notes_md)
 
     with open(brief_path, "w", encoding="utf-8") as f:
         f.write(content)

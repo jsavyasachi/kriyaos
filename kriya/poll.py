@@ -3,6 +3,7 @@ import datetime
 from kriya.daily_brief import generate_daily_brief
 from kriya.email_triage import append_email_triage
 from kriya.finance import write_finance_snapshot
+from kriya.google_keep import write_notes_snapshot
 from kriya.google_tasks import write_tasks_snapshot
 from kriya.vitals import write_vitals_snapshot
 
@@ -12,6 +13,7 @@ def run_poll(state_dir="state", today=None, force=False):
     results = {
         "date": today,
         "tasks": write_tasks_snapshot(state_dir=state_dir, today=today),
+        "notes": write_notes_snapshot(state_dir=state_dir, today=today),
         "finance": write_finance_snapshot(state_dir=state_dir, today=today),
         "vitals": write_vitals_snapshot(state_dir=state_dir, today=today),
         "email_triage": append_email_triage(state_dir=state_dir, today=today, force=force),
@@ -25,6 +27,7 @@ def format_poll_result(results):
         [
             f"Poll complete: {results['date']}",
             f"- tasks: {results['tasks']}",
+            f"- notes: {results['notes']}",
             f"- finance: {results['finance']}",
             f"- vitals: {results['vitals']}",
             f"- email_triage: {results['email_triage']}",

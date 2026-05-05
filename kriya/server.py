@@ -11,6 +11,7 @@ from kriya.apple_reminders import get_reminders_by_list
 from kriya.daily_brief import build_daily_brief, get_calendar_events, get_unread_emails
 from kriya.email_triage import append_email_triage
 from kriya.finance import get_networth_report, write_finance_snapshot
+from kriya.google_keep import write_notes_snapshot
 from kriya.google_tasks import format_tasks, get_open_tasks, write_tasks_snapshot
 from kriya.memory import add as memory_add
 from kriya.memory import search as memory_search
@@ -65,6 +66,14 @@ def tasks() -> str:
     Writes a read-only Google Tasks snapshot to state/tasks-YYYY-MM-DD.md.
     """
     return write_tasks_snapshot()
+
+
+@mcp.tool()
+def notes() -> str:
+    """
+    Writes a read-only Google Keep notes snapshot to state/notes-YYYY-MM-DD.md.
+    """
+    return write_notes_snapshot()
 
 
 @mcp.tool()

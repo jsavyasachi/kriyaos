@@ -42,6 +42,11 @@ class TestServerTools(unittest.TestCase):
         self.assertEqual(server.tasks(), "state/tasks.md")
         mock_tasks.assert_called_once_with()
 
+    @patch("kriya.server.write_notes_snapshot", return_value="state/notes.md")
+    def test_notes_tool(self, mock_notes):
+        self.assertEqual(server.notes(), "state/notes.md")
+        mock_notes.assert_called_once_with()
+
     @patch("kriya.server.write_finance_snapshot", return_value="state/finance.md")
     def test_finance_tool(self, mock_finance):
         self.assertEqual(server.finance(display="INR", inr_per_usd=83.2), "state/finance.md")
@@ -62,6 +67,7 @@ class TestServerTools(unittest.TestCase):
         return_value={
             "date": "2026-04-30",
             "tasks": "t",
+            "notes": "n",
             "finance": "f",
             "vitals": "v",
             "email_triage": "e",
