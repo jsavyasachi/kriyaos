@@ -84,7 +84,7 @@ def inbox() -> str:
 @mcp.tool()
 def remember(text: str) -> str:
     """
-    Stores a memory about the user — preferences, context, facts, recurring patterns.
+    Stores a memory about the user: preferences, context, facts, recurring patterns.
     """
     ok = memory_add(text)
     return "Remembered." if ok else "Memory store unavailable."

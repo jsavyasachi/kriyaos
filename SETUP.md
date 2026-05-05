@@ -17,7 +17,7 @@
 ## Remaining Setup Steps (Run in your terminal) - [ALL COMPLETED]
 
 ### 1. Authenticate Google Cloud with your personal account [DONE]
-### 2. GCP project (REUSING existing — quota was exceeded) [DONE]
+### 2. GCP project (REUSING existing: quota was exceeded) [DONE]
 ### 3. Set up Google Workspace CLI authentication [DONE]
 ### 4. Verify the setup worked [DONE]
 ### 5. Install Python dependencies [DONE]

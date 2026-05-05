@@ -1,5 +1,5 @@
 """
-Deterministic executor — no LLM in this loop.
+Deterministic executor: no LLM in this loop.
 Reads an approved pending action, calls the registered tool handler, marks as executed.
 """
 import datetime

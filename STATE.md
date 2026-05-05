@@ -50,15 +50,15 @@ MCP tools:
 
 ## Current Local State Model
 
-- `state/daily-brief-YYYY-MM-DD.md` — daily summary
-- `state/inbox.md` — appended email triage sections
-- `state/tasks-YYYY-MM-DD.md` — Google Tasks snapshot
-- `state/pending/*.json` — approval-gated proposed writes
-- `state/runs/*-daily_brief.json` — daily brief idempotency markers
-- `state/runs/*-email_triage.json` — email triage idempotency markers
-- `state/audit.jsonl` — tool-call audit log
-- `state/errors.jsonl` — failure log surfaced in daily brief
-- `state/usage.jsonl` — cost accounting used by the daily spend guard
+- `state/daily-brief-YYYY-MM-DD.md` - daily summary
+- `state/inbox.md` - appended email triage sections
+- `state/tasks-YYYY-MM-DD.md` - Google Tasks snapshot
+- `state/pending/*.json` - approval-gated proposed writes
+- `state/runs/*-daily_brief.json` - daily brief idempotency markers
+- `state/runs/*-email_triage.json` - email triage idempotency markers
+- `state/audit.jsonl` - tool-call audit log
+- `state/errors.jsonl` - failure log surfaced in daily brief
+- `state/usage.jsonl` - cost accounting used by the daily spend guard
 
 ## Completed
 
