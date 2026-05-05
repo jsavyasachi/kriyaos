@@ -43,4 +43,5 @@
 
 ## Failure Policy
 - Required Google Workspace and Memory integrations fail fast after logging.
+- Daily brief treats Memory as optional: broken Mem0 lookup is logged and omitted.
 - Finance and vitals remain read-only and render unavailable snapshots when their external data source cannot be read.

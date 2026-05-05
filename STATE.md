@@ -90,6 +90,7 @@ MCP tools:
 - `poll` snapshots tasks, finance, vitals, email triage, then daily brief.
 - Finance/vitals paths are configurable with `KRIYA_F5E_REPO` and `KRIYA_VITALS_DB`.
 - Google Workspace and Memory-backed commands fail fast after logging required integration failures.
+- Daily brief Memory enrichment is optional: broken Mem0 lookup is logged and omitted.
 
 ## Open Blockers
 

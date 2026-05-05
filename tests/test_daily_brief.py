@@ -45,7 +45,7 @@ class TestDailyBrief(unittest.TestCase):
     @patch("kriya.finance.get_networth_report", return_value="Net worth: $123")
     @patch("kriya.apple_reminders.get_reminders_by_list", return_value=[])
     @patch("kriya.google_tasks.get_open_tasks", return_value=[])
-    @patch("kriya.memory.search", return_value=[])
+    @patch("kriya.daily_brief.get_daily_memories_md", return_value=None)
     @patch("kriya.daily_brief.get_unread_emails", return_value=[])
     @patch("kriya.daily_brief.get_calendar_events", return_value=[])
     def test_generate_daily_brief_writes_run_marker(self, _calendar, _emails, _mem, _tasks, _reminders, _finance, _vitals):
@@ -97,3 +97,16 @@ class TestDailyBrief(unittest.TestCase):
         from kriya.daily_brief import get_unread_emails
         with self.assertRaises(RuntimeError):
             get_unread_emails()
+
+    @patch("kriya.daily_brief.log_error")
+    @patch("kriya.memory.search", side_effect=NameError("name 'nn' is not defined"))
+    def test_get_daily_memories_md_logs_and_omits_broken_memory(self, _search, mock_log_error):
+        from kriya.daily_brief import get_daily_memories_md
+
+        self.assertIsNone(get_daily_memories_md("tmp-state"))
+        mock_log_error.assert_called_once_with(
+            "daily_brief.memory",
+            "name 'nn' is not defined",
+            {},
+            "tmp-state",
+        )

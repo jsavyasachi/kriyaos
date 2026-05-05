@@ -2,6 +2,8 @@ import subprocess
 import json
 import datetime
 import os
+import contextlib
+import io
 
 from kriya.utils.audit import log_tool_call
 from kriya.utils.errors import log_error, read_recent_errors
@@ -134,6 +136,16 @@ def format_errors(errors):
     return error_md
 
 
+def get_daily_memories_md(state_dir: str = "state") -> str | None:
+    from kriya.memory import format_memories, search as search_memories
+
+    try:
+        with contextlib.redirect_stderr(io.StringIO()):
+            return format_memories(search_memories("daily preferences context notes", limit=5))
+    except Exception as e:
+        log_error("daily_brief.memory", str(e), {}, state_dir)
+        return None
+
 
 def build_daily_brief(
     today,
@@ -220,7 +232,6 @@ def generate_daily_brief(state_dir="state", today=None, force=False):
     from kriya.google_tasks import format_tasks, get_open_tasks
     from kriya.apple_reminders import get_reminders_by_list
     from kriya.finance import format_finance_section, get_networth_report
-    from kriya.memory import format_memories, search as search_memories
     from kriya.vitals import format_vitals_section, get_vitals_summary
 
     events = get_calendar_events()
@@ -231,7 +242,7 @@ def generate_daily_brief(state_dir="state", today=None, force=False):
         tasks_by_list = tasks_by_list + reminders
     tasks_md = format_tasks(tasks_by_list, today)
     errors = read_recent_errors(state_dir)
-    memories_md = format_memories(search_memories("daily preferences context notes", limit=5))
+    memories_md = get_daily_memories_md(state_dir)
     finance_md = format_finance_section(get_networth_report(state_dir=state_dir))
     vitals_md = format_vitals_section(get_vitals_summary(today=today, state_dir=state_dir))
     content = build_daily_brief(today, events, emails, errors, tasks_md, memories_md, finance_md, vitals_md)
