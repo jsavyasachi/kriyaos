@@ -16,6 +16,9 @@ Agentic personal OS.
 - `python -m kriya finance`
 - `python -m kriya vitals`
 - `python -m kriya approvals`
+- `python -m kriya approve <id>`
+- `python -m kriya execute <id>`
+- `python -m kriya reject <id>`
 - `python -m kriya poll`
 - `python -m kriya inbox`
 

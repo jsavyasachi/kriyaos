@@ -23,6 +23,9 @@
 - **Finance Snapshot CLI:** `python -m kriya finance`
 - **Vitals Snapshot CLI:** `python -m kriya vitals`
 - **List Pending Approvals:** `python -m kriya approvals`
+- **Approve Pending Action:** `python -m kriya approve <id>`
+- **Execute Approved Action:** `python -m kriya execute <id>`
+- **Reject Pending Action:** `python -m kriya reject <id>`
 - **Poll OS State:** `python -m kriya poll`
 - **Render Inbox:** `python -m kriya inbox`
 - **Cost Ceiling Override:** `MAX_DAILY_USD=3.50 python -m kriya daily-brief`
@@ -38,6 +41,9 @@
 - `finance`
 - `vitals`
 - `approvals`
+- `approve`
+- `execute`
+- `reject`
 - `poll`
 - `inbox`
 
@@ -45,3 +51,12 @@
 - Required Google Workspace and Memory integrations fail fast after logging.
 - Daily brief treats Memory as optional: broken Mem0 lookup is logged and omitted.
 - Finance and vitals remain read-only and render unavailable snapshots when their external data source cannot be read.
+
+## Decisions
+- 2026-05-05: next phase scope = approval executor CLI, Keep re-auth + summary, bidirectional Google↔Apple sync, Textual TUI dashboard
+- 2026-05-05: Google↔Apple sync is bidirectional, last-write-wins via `state/sync/mappings.json`, with a circuit breaker that aborts when >25 actions are planned in one run
+- 2026-05-05: TUI is Textual-based, viewer panes plus an interactive approvals pane (`a`/`r` to approve/reject)
+- 2026-05-05: phase sequencing = Slices 1 (executor) and 2 (Keep) in parallel, then 3 (sync), then 4 (TUI)
+- 2026-05-05: Google Keep failure is treated as optional (omit on missing scope), mirroring Memory rather than fail-fast Workspace policy
+- 2026-05-05: every Google write stays gated by the `state/pending/*.json` approval queue; Apple writes execute inline (local, reversible) but are audited
+- 2026-05-05: Apple Calendar writes go through `osascript` since the `ical` CLI is read-only; if brittle, ship Tasks↔Reminders first and defer Calendar sync

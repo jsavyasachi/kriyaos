@@ -2,6 +2,7 @@ import datetime
 import os
 
 from kriya.daily_brief import run_gws
+from kriya.execute import register
 from kriya.utils.errors import log_error
 
 
@@ -82,6 +83,19 @@ def write_tasks_snapshot(state_dir="state", today=None, max_lists=10, max_tasks_
         f.write(content)
     print(f"Tasks snapshot written to {path}")
     return path
+
+
+@register("tasks.insert")
+def insert_task(args: dict) -> dict:
+    params = {
+        "tasklist": args.get("tasklist", "@default"),
+        "title": args["title"],
+    }
+    if args.get("notes"):
+        params["notes"] = args["notes"]
+    if args.get("due"):
+        params["due"] = args["due"]
+    return run_gws("tasks.tasks.insert", params)
 
 
 if __name__ == "__main__":

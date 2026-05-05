@@ -39,6 +39,9 @@ CLI:
 - `python -m kriya finance`
 - `python -m kriya vitals`
 - `python -m kriya approvals`
+- `python -m kriya approve <id>`
+- `python -m kriya execute <id>`
+- `python -m kriya reject <id>`
 - `python -m kriya poll`
 - `python -m kriya inbox`
 
@@ -50,6 +53,9 @@ MCP tools:
 - `finance`
 - `vitals`
 - `approvals`
+- `approve`
+- `execute`
+- `reject`
 - `poll`
 - `inbox`
 
@@ -91,6 +97,8 @@ MCP tools:
 - Finance/vitals paths are configurable with `KRIYA_F5E_REPO` and `KRIYA_VITALS_DB`.
 - Google Workspace and Memory-backed commands fail fast after logging required integration failures.
 - Daily brief Memory enrichment is optional: broken Mem0 lookup is logged and omitted.
+- Approval executor CLI and MCP tools can approve, reject, and execute approved actions.
+- Approved `tasks.insert` actions execute through the deterministic executor.
 
 ## Open Blockers
 
@@ -98,24 +106,14 @@ MCP tools:
   Re-auth with `https://www.googleapis.com/auth/keep.readonly`, verify
   `gws keep notes list`, then add Keep read-only summary.
 - Launchd is scaffolded but not installed/validated as a real user agent.
-- Approval executor does not exist yet. Pending items cannot be approved into
-  real Google writes.
 
 ## Proposed Next Plan
 
-1. Add approval executor skeleton.
-   - commands: `approve <id>`, `reject <id>`
-   - start with status transitions only
-   - no Google writes until reviewed
+1. Re-auth Keep and add read-only Keep summary.
 
-2. Add Tasks executor behind approval.
-   - approved `tasks.insert`
-   - idempotency check before write
-   - append audit entry
+2. Add Keep read-only summary once OAuth scopes are fixed.
 
-3. Re-auth Keep and add read-only Keep summary.
-
-4. Add Keep read-only summary once OAuth scopes are fixed.
+3. Add bidirectional Google Tasks ↔ Apple Reminders sync behind the approval queue.
 
 ## Design Notes
 

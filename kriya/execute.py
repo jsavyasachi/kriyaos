@@ -46,27 +46,13 @@ def execute_action(approval_id: str, state_dir: str = "state") -> dict:
         json.dump(item, f, indent=2, sort_keys=True)
         f.write("\n")
 
-    log_tool_call(f"execute.{tool}", item["args"], "ok", {"id": approval_id})
+    log_tool_call(f"execute.{tool}", item["args"], "ok", {"id": approval_id}, state_dir=state_dir)
     return item
 
 
 # ---------------------------------------------------------------------------
 # Registered write tools
 # ---------------------------------------------------------------------------
-
-@register("tasks.insert")
-def _insert_task(args: dict) -> dict:
-    from kriya.daily_brief import run_gws
-    params = {
-        "tasklist": args.get("tasklist", "@default"),
-        "title": args["title"],
-    }
-    if args.get("notes"):
-        params["notes"] = args["notes"]
-    if args.get("due"):
-        params["due"] = args["due"]
-    return run_gws("tasks.tasks.insert", params)
-
 
 @register("calendar.create_event")
 def _create_calendar_event(args: dict) -> dict:

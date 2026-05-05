@@ -4,6 +4,8 @@ import json
 import os
 from typing import Any
 
+from kriya.utils.audit import log_tool_call
+
 
 def stable_hash(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()[:16]
@@ -57,7 +59,7 @@ def create_pending_action(
     return path
 
 
-def list_pending_actions(state_dir: str = "state") -> list[dict[str, Any]]:
+def list_by_status(status: str, state_dir: str = "state") -> list[dict[str, Any]]:
     directory = pending_dir(state_dir)
     if not os.path.exists(directory):
         return []
@@ -68,33 +70,57 @@ def list_pending_actions(state_dir: str = "state") -> list[dict[str, Any]]:
             continue
         with open(os.path.join(directory, name), encoding="utf-8") as f:
             item = json.load(f)
-        if item.get("status") == "pending":
+        if item.get("status") == status:
             items.append(item)
     return items
 
 
-def _update_status(approval_id: str, status: str, state_dir: str = "state", **extra) -> dict:
+def list_pending_actions(state_dir: str = "state") -> list[dict[str, Any]]:
+    return list_by_status("pending", state_dir)
+
+
+def set_status(approval_id: str, status: str, state_dir: str = "state") -> dict:
+    if status not in {"pending", "approved", "rejected"}:
+        raise ValueError(f"Unsupported approval status: {status}")
+
     path = pending_path(state_dir, approval_id)
     if not os.path.exists(path):
         raise FileNotFoundError(f"No pending action found: {approval_id}")
     with open(path, encoding="utf-8") as f:
         item = json.load(f)
+
+    previous_status = item.get("status")
+    if previous_status == "executed":
+        raise ValueError(f"Action {approval_id} is already executed")
+    if previous_status == status:
+        return item
+
+    now = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
     item["status"] = status
-    item.update(extra)
+    if status == "approved":
+        item["approved_at"] = now
+    if status == "rejected":
+        item["rejected_at"] = now
+
     with open(path, "w", encoding="utf-8") as f:
         json.dump(item, f, indent=2, sort_keys=True)
         f.write("\n")
+    log_tool_call(
+        f"approvals.{status}",
+        {"id": approval_id},
+        "ok",
+        {"from": previous_status, "to": status},
+        state_dir=state_dir,
+    )
     return item
 
 
 def approve_action(approval_id: str, state_dir: str = "state") -> dict:
-    now = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
-    return _update_status(approval_id, "approved", state_dir, approved_at=now)
+    return set_status(approval_id, "approved", state_dir)
 
 
 def reject_action(approval_id: str, state_dir: str = "state") -> dict:
-    now = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
-    return _update_status(approval_id, "rejected", state_dir, rejected_at=now)
+    return set_status(approval_id, "rejected", state_dir)
 
 
 def format_pending_actions(items: list[dict[str, Any]]) -> str:

@@ -2,10 +2,13 @@ import tempfile
 import unittest
 
 from kriya.approvals import (
+    approve_action,
     create_pending_action,
     format_pending_actions,
+    list_by_status,
     list_pending_actions,
     make_idempotency_key,
+    reject_action,
 )
 
 
@@ -53,3 +56,16 @@ class TestApprovals(unittest.TestCase):
         )
 
         self.assertIn("**abc** `tasks.insert`: Follow up", content)
+
+    def test_list_by_status_filters_items(self):
+        with tempfile.TemporaryDirectory() as state_dir:
+            first = create_pending_action("tasks.insert", {"title": "Reply"}, "r", "s1", "i", state_dir)
+            second = create_pending_action("tasks.insert", {"title": "Call"}, "r", "s2", "i", state_dir)
+            approve_action(first.rsplit("/", 1)[-1].removesuffix(".json"), state_dir)
+            reject_action(second.rsplit("/", 1)[-1].removesuffix(".json"), state_dir)
+
+            approved = list_by_status("approved", state_dir)
+            rejected = list_by_status("rejected", state_dir)
+
+        self.assertEqual([item["args"]["title"] for item in approved], ["Reply"])
+        self.assertEqual([item["args"]["title"] for item in rejected], ["Call"])

@@ -6,7 +6,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from mcp.server.fastmcp import FastMCP
-from kriya.approvals import format_pending_actions, list_pending_actions
+from kriya.approvals import approve_action, format_pending_actions, list_pending_actions, reject_action
 from kriya.apple_reminders import get_reminders_by_list
 from kriya.daily_brief import build_daily_brief, get_calendar_events, get_unread_emails
 from kriya.email_triage import append_email_triage
@@ -89,6 +89,35 @@ def approvals() -> str:
     Lists pending approval-gated actions.
     """
     return format_pending_actions(list_pending_actions())
+
+
+@mcp.tool()
+def approve(approval_id: str) -> str:
+    """
+    Approves a pending action without executing it.
+    """
+    item = approve_action(approval_id)
+    return f"Approved: {item['tool']} ({item['id']})"
+
+
+@mcp.tool()
+def execute(approval_id: str) -> str:
+    """
+    Executes an approved action through the deterministic executor.
+    """
+    from kriya.execute import execute_action
+
+    item = execute_action(approval_id)
+    return f"Executed: {item['tool']} ({item['id']})"
+
+
+@mcp.tool()
+def reject(approval_id: str) -> str:
+    """
+    Rejects a pending or approved action.
+    """
+    reject_action(approval_id)
+    return f"Rejected: {approval_id}"
 
 
 @mcp.tool()

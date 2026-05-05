@@ -57,9 +57,13 @@ def build_parser():
     memories = subparsers.add_parser("memories", help="List or add stored memories")
     memories.add_argument("--add", metavar="TEXT", help="Store a new memory")
 
-    approve = subparsers.add_parser("approve", help="Approve and execute a pending action")
+    approve = subparsers.add_parser("approve", help="Approve a pending action")
     approve.add_argument("id", help="Approval ID")
     approve.add_argument("--state-dir", default="state")
+
+    execute = subparsers.add_parser("execute", help="Execute an approved action")
+    execute.add_argument("id", help="Approval ID")
+    execute.add_argument("--state-dir", default="state")
 
     reject = subparsers.add_parser("reject", help="Reject a pending action")
     reject.add_argument("id", help="Approval ID")
@@ -118,8 +122,11 @@ def run_command(args):
         print(render_inbox(args.state_dir), end="")
         return 0
     if args.command == "approve":
+        item = approve_action(args.id, args.state_dir)
+        print(f"Approved: {item['tool']} ({item['id']})")
+        return 0
+    if args.command == "execute":
         from kriya.execute import execute_action
-        approve_action(args.id, args.state_dir)
         item = execute_action(args.id, args.state_dir)
         print(f"Executed: {item['tool']} ({item['id']})")
         return 0

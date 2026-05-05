@@ -90,16 +90,32 @@ class TestCreateCalendarEvent(unittest.TestCase):
 
 
 class TestInsertTask(unittest.TestCase):
-    @patch("kriya.daily_brief.run_gws")
+    @patch("kriya.google_tasks.run_gws")
     def test_passes_correct_params_to_gws(self, mock_gws):
         mock_gws.return_value = {"id": "task123", "status": "needsAction"}
-        from kriya.execute import _insert_task
-        _insert_task({"tasklist": "@default", "title": "Follow up", "notes": "Check this"})
+        from kriya.google_tasks import insert_task
+        insert_task({"tasklist": "@default", "title": "Follow up", "notes": "Check this"})
         call_args = mock_gws.call_args
         self.assertEqual(call_args[0][0], "tasks.tasks.insert")
         params = call_args[0][1]
         self.assertEqual(params["title"], "Follow up")
         self.assertEqual(params["notes"], "Check this")
+
+    @patch("kriya.google_tasks.run_gws")
+    def test_execute_registered_tasks_insert(self, mock_gws):
+        mock_gws.return_value = {"id": "task123", "status": "needsAction"}
+        with tempfile.TemporaryDirectory() as state_dir:
+            approval_id = _make_approved_action(
+                state_dir,
+                tool="tasks.insert",
+                args={"title": "Follow up", "notes": "Check this"},
+            )
+            import kriya.google_tasks  # noqa: F401
+
+            item = execute_action(approval_id, state_dir)
+
+        self.assertEqual(item["status"], "executed")
+        self.assertEqual(item["result"]["id"], "task123")
 
 
 class TestApproveReject(unittest.TestCase):
@@ -126,3 +142,12 @@ class TestApproveReject(unittest.TestCase):
 
         self.assertEqual(item["status"], "rejected")
         self.assertIn("rejected_at", item)
+
+    def test_reject_executed_raises(self):
+        with tempfile.TemporaryDirectory() as state_dir:
+            approval_id = _make_approved_action(state_dir)
+            with patch("kriya.execute._TOOLS", {"calendar.create_event": lambda args: {"id": "evt123"}}):
+                execute_action(approval_id, state_dir)
+
+            with self.assertRaises(ValueError):
+                reject_action(approval_id, state_dir)

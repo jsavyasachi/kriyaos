@@ -129,3 +129,30 @@ class TestCli(unittest.TestCase):
 
         self.assertEqual(result, 0)
         mock_inbox.assert_called_once_with("tmp-state")
+
+    @patch("kriya.cli.approve_action", return_value={"id": "abc", "tool": "tasks.insert"})
+    def test_approve_command_only_approves(self, mock_approve):
+        with contextlib.redirect_stdout(io.StringIO()) as stdout:
+            result = main(["approve", "abc", "--state-dir", "tmp-state"])
+
+        self.assertEqual(result, 0)
+        mock_approve.assert_called_once_with("abc", "tmp-state")
+        self.assertEqual(stdout.getvalue(), "Approved: tasks.insert (abc)\n")
+
+    @patch("kriya.execute.execute_action", return_value={"id": "abc", "tool": "tasks.insert"})
+    def test_execute_command_executes_approved_action(self, mock_execute):
+        with contextlib.redirect_stdout(io.StringIO()) as stdout:
+            result = main(["execute", "abc", "--state-dir", "tmp-state"])
+
+        self.assertEqual(result, 0)
+        mock_execute.assert_called_once_with("abc", "tmp-state")
+        self.assertEqual(stdout.getvalue(), "Executed: tasks.insert (abc)\n")
+
+    @patch("kriya.cli.reject_action")
+    def test_reject_command(self, mock_reject):
+        with contextlib.redirect_stdout(io.StringIO()) as stdout:
+            result = main(["reject", "abc", "--state-dir", "tmp-state"])
+
+        self.assertEqual(result, 0)
+        mock_reject.assert_called_once_with("abc", "tmp-state")
+        self.assertEqual(stdout.getvalue(), "Rejected: abc\n")
