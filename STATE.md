@@ -106,6 +106,8 @@ MCP tools:
 - Approval executor CLI and MCP tools can approve, reject, and execute approved actions.
 - Approved `tasks.insert` actions execute through the deterministic executor.
 - Pure task sync planner can reconcile normalized Google Tasks and Apple Reminders.
+- Google Tasks `update`, `complete`, and `delete` executors are registered.
+- Apple Reminders add/update/complete/delete adapters write through `osascript`.
 
 ## Open Blockers
 
@@ -113,14 +115,15 @@ MCP tools:
   Re-auth with `https://www.googleapis.com/auth/keep.readonly`, then verify
   `gws keep notes list` and `python -m kriya notes`.
 - Launchd is scaffolded but not installed/validated as a real user agent.
+- Apple Calendar write reliability is not validated yet.
 
 ## Proposed Next Plan
 
 1. Re-auth Keep and smoke-test `python -m kriya notes`.
 
-2. Add Apple Reminders write adapters and Google Tasks update/complete/delete executors.
+2. Add `sync-tasks` CLI/MCP command that writes Apple changes inline and queues Google changes.
 
-3. Add `sync-tasks` CLI/MCP command that writes Apple changes inline and queues Google changes.
+3. Add Calendar sync after Tasks↔Reminders converges.
 
 ## Design Notes
 

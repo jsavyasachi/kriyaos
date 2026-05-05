@@ -53,3 +53,50 @@ class TestAppleReminders(unittest.TestCase):
         get_reminders_by_list()
         cmd = mock_run.call_args[0][0]
         self.assertIn("--incomplete", cmd)
+
+    @patch("subprocess.run")
+    def test_add_reminder_uses_osascript(self, mock_run):
+        mock_run.return_value = MagicMock(stdout="uid123\n")
+        from kriya.apple_reminders import add_reminder
+
+        uid = add_reminder("Personal", "Buy milk", due="2026-05-05", notes="Whole")
+
+        self.assertEqual(uid, "uid123")
+        cmd = mock_run.call_args[0][0]
+        self.assertEqual(cmd[:2], ["osascript", "-e"])
+        self.assertIn('make new reminder', cmd[2])
+        self.assertIn('list "Personal"', cmd[2])
+        self.assertIn('name:"Buy milk"', cmd[2])
+
+    @patch("subprocess.run")
+    def test_update_reminder_uses_osascript(self, mock_run):
+        mock_run.return_value = MagicMock(stdout="uid123\n")
+        from kriya.apple_reminders import update_reminder
+
+        uid = update_reminder("uid123", title="Buy coffee", notes="Beans")
+
+        self.assertEqual(uid, "uid123")
+        script = mock_run.call_args[0][0][2]
+        self.assertIn('whose id is "uid123"', script)
+        self.assertIn('set name of targetReminder to "Buy coffee"', script)
+        self.assertIn('set body of targetReminder to "Beans"', script)
+
+    @patch("subprocess.run")
+    def test_complete_reminder_uses_osascript(self, mock_run):
+        mock_run.return_value = MagicMock(stdout="uid123\n")
+        from kriya.apple_reminders import complete_reminder
+
+        uid = complete_reminder("uid123")
+
+        self.assertEqual(uid, "uid123")
+        self.assertIn("set completed of targetReminder to true", mock_run.call_args[0][0][2])
+
+    @patch("subprocess.run")
+    def test_delete_reminder_uses_osascript(self, mock_run):
+        mock_run.return_value = MagicMock(stdout="uid123\n")
+        from kriya.apple_reminders import delete_reminder
+
+        uid = delete_reminder("uid123")
+
+        self.assertEqual(uid, "uid123")
+        self.assertIn('delete first reminder whose id is "uid123"', mock_run.call_args[0][0][2])

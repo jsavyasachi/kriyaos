@@ -116,6 +116,14 @@ class TestDailyBrief(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             get_unread_emails()
 
+    @patch("subprocess.run")
+    def test_run_gws_handles_empty_stdout(self, mock_run):
+        from kriya.daily_brief import run_gws
+
+        mock_run.return_value.stdout = ""
+
+        self.assertEqual(run_gws("tasks.tasks.delete", {"tasklist": "@default", "task": "abc"}), {})
+
     @patch("kriya.daily_brief.log_error")
     @patch("kriya.memory.search", side_effect=NameError("name 'nn' is not defined"))
     def test_get_daily_memories_md_logs_and_omits_broken_memory(self, _search, mock_log_error):

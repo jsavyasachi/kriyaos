@@ -1,5 +1,6 @@
 import datetime
 import os
+from typing import Any
 
 from kriya.daily_brief import run_gws
 from kriya.execute import register
@@ -96,6 +97,55 @@ def insert_task(args: dict) -> dict:
     if args.get("due"):
         params["due"] = args["due"]
     return run_gws("tasks.tasks.insert", params)
+
+
+@register("tasks.update")
+def update_task(args: dict[str, Any]) -> dict:
+    params = {
+        "tasklist": args.get("tasklist", "@default"),
+        "task": args["id"],
+    }
+    params.update(_task_patch(args))
+    return run_gws("tasks.tasks.patch", params)
+
+
+@register("tasks.complete")
+def complete_task(args: dict[str, Any]) -> dict:
+    completed_at = args.get("completed") or datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+    params = {
+        "tasklist": args.get("tasklist", "@default"),
+        "task": args["id"],
+        "status": "completed",
+        "completed": completed_at,
+    }
+    return run_gws("tasks.tasks.patch", params)
+
+
+@register("tasks.delete")
+def delete_task(args: dict[str, Any]) -> dict:
+    return run_gws(
+        "tasks.tasks.delete",
+        {
+            "tasklist": args.get("tasklist", "@default"),
+            "task": args["id"],
+        },
+    )
+
+
+def _task_patch(args: dict[str, Any]) -> dict[str, Any]:
+    patch: dict[str, Any] = {}
+    for field in ("title", "notes", "due"):
+        if field in args:
+            patch[field] = args[field]
+    if "completed" in args:
+        if args["completed"]:
+            patch["status"] = "completed"
+            patch["completed"] = datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+        else:
+            patch["status"] = "needsAction"
+    if "status" in args:
+        patch["status"] = args["status"]
+    return patch
 
 
 if __name__ == "__main__":

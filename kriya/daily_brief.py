@@ -14,7 +14,7 @@ def run_gws(tool, params):
     cmd = ["gws", *tool.split("."), "--params", json.dumps(params)]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        data = json.loads(result.stdout)
+        data = json.loads(result.stdout) if result.stdout.strip() else {}
         summary = {"type": type(data).__name__}
         if isinstance(data, dict):
             if "items" in data:
