@@ -6,9 +6,10 @@ from kriya.approvals import create_pending_action
 from kriya.apple_reminders import add_reminder, complete_reminder, delete_reminder, get_reminders_for_sync, update_reminder
 from kriya.google_tasks import get_tasks_for_sync
 from kriya.sync import load_mappings, plan_task_sync, save_mappings
+from kriya.sync_routes import get_sync_route
 from kriya.utils.audit import log_tool_call
 
-APPLE_TODO_LIST = "To do"
+TASK_ROUTE = get_sync_route("tasks.todo")
 
 
 def run_task_sync(state_dir: str = "state", action_limit: int = 25) -> dict[str, Any]:
@@ -82,7 +83,7 @@ def format_task_sync_result(result: dict[str, Any]) -> str:
 def _apply_apple_action(action: dict[str, Any], mappings: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:
     task = action.get("task", {})
     if action["type"] == "create_apple":
-        uid = add_reminder(APPLE_TODO_LIST, task["title"], due=task.get("due"), notes=task.get("notes"))
+        uid = add_reminder(TASK_ROUTE["apple"]["list"], task["title"], due=task.get("due"), notes=task.get("notes"))
         _set_mapping_apple_uid(mappings, action["google_id"], uid)
         return {"type": action["type"], "uid": uid}
     if action["type"] == "update_apple":
