@@ -8,7 +8,7 @@ or next plans change.
 
 Build Kriya OS as a read-first personal OS:
 
-- collect state from Gmail, Calendar, Google Tasks, Keep, finance, and vitals
+- collect state from Gmail, Calendar, Google Tasks, finance, and vitals
 - write local summaries under `state/`
 - propose actions into `state/pending/*.json`
 - require explicit approval before any external write
@@ -36,7 +36,6 @@ CLI:
 - `python -m kriya daily-brief`
 - `python -m kriya email-triage`
 - `python -m kriya tasks`
-- `python -m kriya notes`
 - `python -m kriya groceries`
 - `python -m kriya finance`
 - `python -m kriya vitals`
@@ -53,7 +52,6 @@ MCP tools:
 - `daily_brief`
 - `email_triage`
 - `tasks`
-- `notes`
 - `groceries`
 - `finance`
 - `vitals`
@@ -70,7 +68,6 @@ MCP tools:
 - `state/daily-brief-YYYY-MM-DD.md` - daily summary
 - `state/inbox.md` - appended email triage sections
 - `state/tasks-YYYY-MM-DD.md` - Google Tasks snapshot
-- `state/notes-YYYY-MM-DD.md` - Google Keep notes snapshot
 - `state/groceries-YYYY-MM-DD.md` - Apple Reminders Groceries snapshot
 - `state/finance-YYYY-MM-DD.md` - f5e net-worth snapshot
 - `state/vitals-YYYY-MM-DD.md` - Apple Health vitals snapshot
@@ -94,7 +91,6 @@ MCP tools:
 - launchd template for daily brief.
 - Read-only email triage into `state/inbox.md`.
 - Read-only Google Tasks snapshot and daily brief Tasks section.
-- Read-only Google Keep notes snapshot and optional daily brief Notes section.
 - Approval queue foundation for proposed writes.
 - Email triage creates local `tasks.insert` proposals for actionable emails.
 - CLI entrypoint.
@@ -103,35 +99,31 @@ MCP tools:
 - `inbox` local state renderer.
 - Read-only `f5e` finance snapshot and daily brief Finance section.
 - Read-only Apple Health vitals snapshot and daily brief Vitals section.
-- `poll` snapshots tasks, notes, groceries, finance, vitals, email triage, then daily brief.
+- `poll` snapshots tasks, groceries, finance, vitals, email triage, then daily brief.
 - Finance/vitals paths are configurable with `KRIYA_F5E_REPO` and `KRIYA_VITALS_DB`.
 - Google Workspace and Memory-backed commands fail fast after logging required integration failures.
 - Daily brief Memory enrichment is optional: broken Mem0 lookup is logged and omitted.
-- Daily brief Keep notes enrichment is optional: missing Keep scope is logged and omitted.
 - Approval executor CLI and MCP tools can approve, reject, and execute approved actions.
 - Approved `tasks.insert` actions execute through the deterministic executor.
 - Pure task sync planner can reconcile normalized Google Tasks and Apple Reminders.
 - Google Tasks `update`, `complete`, and `delete` executors are registered.
 - Apple Reminders add/update/complete/delete adapters write through `osascript`.
 - `sync-tasks` writes Apple-side task changes inline and queues Google-side writes for approval.
-- Apple Reminders `Groceries` snapshot is Apple-only; Google Keep is unsupported for this account/client.
+- Apple Reminders `Groceries` snapshot.
 - Apple Calendar already reads Google calendars through the local Google account, so calendar sync is deferred unless duplicate-control logic is designed.
+- Google Keep integration removed: `keep.readonly` scope is rejected for personal `@gmail.com` OAuth clients.
 
 ## Open Blockers
 
-- Google Keep: current OAuth token may still lack Keep scopes.
-  Re-auth with `https://www.googleapis.com/auth/keep.readonly`, then verify
-  `gws keep notes list` and `python -m kriya notes`.
 - Launchd is scaffolded but not installed/validated as a real user agent.
-- Google Keep API scope is rejected for the current `@gmail.com` OAuth client, so Keep-backed groceries are unsupported.
 
 ## Proposed Next Plan
 
-1. Re-auth Keep and smoke-test `python -m kriya notes`.
+1. Install and validate the launchd daily brief agent as a real user agent.
 
-2. Change `sync-tasks` wiring from Apple Reminders `Reminders` to Apple Reminders `To do`.
+2. Smoke-test `python -m kriya groceries` and `python -m kriya sync-tasks` against real Reminders permissions.
 
-3. Smoke-test `python -m kriya groceries` against real Reminders permissions.
+3. Start Slice 4: Textual TUI dashboard (viewer panes plus interactive approvals pane).
 
 ## Design Notes
 

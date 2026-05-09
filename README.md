@@ -13,7 +13,6 @@ Agentic personal OS.
 - `python -m kriya daily-brief`
 - `python -m kriya email-triage`
 - `python -m kriya tasks`
-- `python -m kriya notes`
 - `python -m kriya groceries`
 - `python -m kriya finance`
 - `python -m kriya vitals`

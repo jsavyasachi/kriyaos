@@ -42,13 +42,6 @@ class TestDailyBrief(unittest.TestCase):
         self.assertIn("## ✅ Tasks", brief)
         self.assertIn("- **Ship**", brief)
 
-    def test_build_daily_brief_formats_notes(self):
-        brief = build_daily_brief("2026-04-30", [], [], notes_md="- **Ideas**\n")
-
-        self.assertIn("## 📝 Notes", brief)
-        self.assertIn("- **Ideas**", brief)
-
-    @patch("kriya.google_keep.get_notes_section", return_value=None)
     @patch("kriya.vitals.get_vitals_summary", return_value={})
     @patch("kriya.finance.get_networth_report", return_value="Net worth: $123")
     @patch("kriya.apple_reminders.get_reminders_by_list", return_value=[])
@@ -65,7 +58,6 @@ class TestDailyBrief(unittest.TestCase):
         _reminders,
         _finance,
         _vitals,
-        _notes,
     ):
         with tempfile.TemporaryDirectory() as state_dir:
             with contextlib.redirect_stdout(io.StringIO()):

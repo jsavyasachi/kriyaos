@@ -20,7 +20,6 @@
 - **Generate Daily Brief CLI:** `python -m kriya daily-brief`
 - **Triage Email CLI:** `python -m kriya email-triage`
 - **Tasks Snapshot CLI:** `python -m kriya tasks`
-- **Notes Snapshot CLI:** `python -m kriya notes`
 - **Groceries Snapshot CLI:** `python -m kriya groceries`
 - **Finance Snapshot CLI:** `python -m kriya finance`
 - **Vitals Snapshot CLI:** `python -m kriya vitals`
@@ -41,7 +40,6 @@
 - `daily_brief`
 - `email_triage`
 - `tasks`
-- `notes`
 - `groceries`
 - `finance`
 - `vitals`
@@ -70,3 +68,4 @@
 - 2026-05-09: Task sync wiring = Google Tasks `To Do` ↔ Apple Reminders list `To do`
 - 2026-05-09: Grocery source of truth = Apple Reminders list `Groceries`; Google Keep is unsupported because the Keep OAuth scope is rejected for the current `@gmail.com` OAuth client
 - 2026-05-09: Apple Reminders list `Reminders` is Apple-only until the user assigns an external target
+- 2026-05-09: Google Keep integration removed; Keep API rejects `keep.readonly` scope on personal `@gmail.com` OAuth clients (Workspace-only), so `notes` CLI/MCP and Keep enrichment in the daily brief were ripped out
