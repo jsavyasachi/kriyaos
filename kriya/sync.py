@@ -37,11 +37,6 @@ def title_hash(title: str, due: str | None = None) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()[:16]
 
 
-def event_key(title: str, start: str | None = None) -> str:
-    value = f"{title.strip().lower()}:{start or ''}"
-    return hashlib.sha256(value.encode("utf-8")).hexdigest()[:16]
-
-
 def plan_task_sync(
     google_tasks: list[dict[str, Any]],
     apple_tasks: list[dict[str, Any]],
@@ -97,71 +92,6 @@ def plan_task_sync(
     return {"actions": actions, "mappings": current}
 
 
-def plan_event_sync(
-    google_events: list[dict[str, Any]],
-    apple_events: list[dict[str, Any]],
-    mappings: dict[str, list[dict[str, Any]]] | None = None,
-) -> dict[str, Any]:
-    current = copy.deepcopy(mappings or empty_mappings())
-    current.setdefault("tasks", [])
-    rows = current.setdefault("events", [])
-    actions: list[dict[str, Any]] = []
-    matched_google: set[str] = set()
-    matched_apple: set[str] = set()
-
-    google_by_id = {event["id"]: event for event in google_events if event.get("id")}
-    apple_by_uid = {event["uid"]: event for event in apple_events if event.get("uid")}
-
-    for row in list(rows):
-        google = google_by_id.get(row.get("google_id"))
-        apple = apple_by_uid.get(row.get("apple_uid"))
-        if google:
-            matched_google.add(google["id"])
-        if apple:
-            matched_apple.add(apple["uid"])
-        _plan_mapped_event_pair(row, google, apple, actions)
-
-    for google in google_events:
-        google_id = google.get("id")
-        if not google_id or google_id in matched_google:
-            continue
-        apple = _find_event_bootstrap_match(google, apple_events, matched_apple)
-        row = _new_event_mapping(google=google, apple=apple)
-        rows.append(row)
-        matched_google.add(google_id)
-        if apple:
-            matched_apple.add(apple["uid"])
-            _plan_mapped_event_pair(row, google, apple, actions)
-        elif not google.get("deleted"):
-            actions.append(
-                {
-                    "type": "create_apple",
-                    "source": "google",
-                    "google_id": google["id"],
-                    "event": _event_payload(google),
-                }
-            )
-
-    for apple in apple_events:
-        apple_uid = apple.get("uid")
-        if not apple_uid or apple_uid in matched_apple:
-            continue
-        row = _new_event_mapping(google=None, apple=apple)
-        rows.append(row)
-        matched_apple.add(apple_uid)
-        if not apple.get("deleted"):
-            actions.append(
-                {
-                    "type": "create_google",
-                    "source": "apple",
-                    "apple_uid": apple["uid"],
-                    "event": _event_payload(apple),
-                }
-            )
-
-    return {"actions": actions, "mappings": current}
-
-
 def _plan_mapped_pair(
     row: dict[str, Any],
     google: dict[str, Any] | None,
@@ -197,69 +127,6 @@ def _plan_mapped_pair(
         actions.append({"type": "create_google", "source": "apple", "apple_uid": apple["uid"], "task": _task_payload(apple)})
 
 
-def _plan_mapped_event_pair(
-    row: dict[str, Any],
-    google: dict[str, Any] | None,
-    apple: dict[str, Any] | None,
-    actions: list[dict[str, Any]],
-) -> None:
-    if google and apple:
-        _refresh_event_mapping(row, google, apple)
-        if google.get("deleted") and not apple.get("deleted"):
-            actions.append({"type": "delete_apple", "source": "google", "apple_uid": apple["uid"]})
-            return
-        if apple.get("deleted") and not google.get("deleted"):
-            actions.append({"type": "delete_google", "source": "apple", "google_id": google["id"]})
-            return
-        if google.get("deleted") and apple.get("deleted"):
-            return
-        if _event_payload(google) == _event_payload(apple):
-            return
-        winner = _winner_source(google, apple, row)
-        if winner == "google":
-            actions.append(
-                {
-                    "type": "update_apple",
-                    "source": "google",
-                    "apple_uid": apple["uid"],
-                    "event": _event_payload(google),
-                }
-            )
-        else:
-            actions.append(
-                {
-                    "type": "update_google",
-                    "source": "apple",
-                    "google_id": google["id"],
-                    "event": _event_payload(apple),
-                }
-            )
-        row["last_modified_at_source"] = winner
-        row["last_modified_ts"] = _updated_at(google if winner == "google" else apple)
-        return
-
-    if google and not google.get("deleted"):
-        row["last_seen_google"] = _updated_at(google)
-        actions.append(
-            {
-                "type": "create_apple",
-                "source": "google",
-                "google_id": google["id"],
-                "event": _event_payload(google),
-            }
-        )
-    if apple and not apple.get("deleted"):
-        row["last_seen_apple"] = _updated_at(apple)
-        actions.append(
-            {
-                "type": "create_google",
-                "source": "apple",
-                "apple_uid": apple["uid"],
-                "event": _event_payload(apple),
-            }
-        )
-
-
 def _find_bootstrap_match(
     google: dict[str, Any],
     apple_tasks: list[dict[str, Any]],
@@ -270,20 +137,6 @@ def _find_bootstrap_match(
         if not apple_uid or apple_uid in matched_apple:
             continue
         if _task_key(google) == _task_key(apple):
-            return apple
-    return None
-
-
-def _find_event_bootstrap_match(
-    google: dict[str, Any],
-    apple_events: list[dict[str, Any]],
-    matched_apple: set[str],
-) -> dict[str, Any] | None:
-    for apple in apple_events:
-        apple_uid = apple.get("uid")
-        if not apple_uid or apple_uid in matched_apple:
-            continue
-        if _event_key(google) == _event_key(apple):
             return apple
     return None
 
@@ -305,23 +158,6 @@ def _new_task_mapping(
     }
 
 
-def _new_event_mapping(
-    google: dict[str, Any] | None,
-    apple: dict[str, Any] | None,
-) -> dict[str, Any]:
-    source_event = google or apple or {}
-    winner = "google" if google else "apple"
-    return {
-        "google_id": google.get("id") if google else None,
-        "apple_uid": apple.get("uid") if apple else None,
-        "event_key": _event_key(source_event),
-        "last_seen_google": _updated_at(google),
-        "last_seen_apple": _updated_at(apple),
-        "last_modified_at_source": winner,
-        "last_modified_ts": _updated_at(source_event),
-    }
-
-
 def _refresh_mapping(row: dict[str, Any], google: dict[str, Any], apple: dict[str, Any]) -> None:
     row["google_id"] = google.get("id")
     row["apple_uid"] = apple.get("uid")
@@ -330,20 +166,8 @@ def _refresh_mapping(row: dict[str, Any], google: dict[str, Any], apple: dict[st
     row["last_seen_apple"] = _updated_at(apple)
 
 
-def _refresh_event_mapping(row: dict[str, Any], google: dict[str, Any], apple: dict[str, Any]) -> None:
-    row["google_id"] = google.get("id")
-    row["apple_uid"] = apple.get("uid")
-    row["event_key"] = _event_key(google)
-    row["last_seen_google"] = _updated_at(google)
-    row["last_seen_apple"] = _updated_at(apple)
-
-
 def _task_key(task: dict[str, Any]) -> str:
     return title_hash(task.get("title", ""), task.get("due"))
-
-
-def _event_key(event: dict[str, Any]) -> str:
-    return event_key(event.get("title", ""), event.get("start"))
 
 
 def _task_payload(task: dict[str, Any]) -> dict[str, Any]:
@@ -352,17 +176,6 @@ def _task_payload(task: dict[str, Any]) -> dict[str, Any]:
         "due": task.get("due"),
         "notes": task.get("notes", ""),
         "completed": bool(task.get("completed", False)),
-    }
-
-
-def _event_payload(event: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "title": event.get("title", ""),
-        "start": event.get("start"),
-        "end": event.get("end"),
-        "all_day": bool(event.get("all_day", False)),
-        "description": event.get("description", ""),
-        "location": event.get("location", ""),
     }
 
 
