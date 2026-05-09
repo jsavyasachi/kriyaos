@@ -103,7 +103,7 @@ MCP tools:
 - `inbox` local state renderer.
 - Read-only `f5e` finance snapshot and daily brief Finance section.
 - Read-only Apple Health vitals snapshot and daily brief Vitals section.
-- `poll` snapshots tasks, notes, finance, vitals, email triage, then daily brief.
+- `poll` snapshots tasks, notes, groceries, finance, vitals, email triage, then daily brief.
 - Finance/vitals paths are configurable with `KRIYA_F5E_REPO` and `KRIYA_VITALS_DB`.
 - Google Workspace and Memory-backed commands fail fast after logging required integration failures.
 - Daily brief Memory enrichment is optional: broken Mem0 lookup is logged and omitted.

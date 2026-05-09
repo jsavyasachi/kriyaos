@@ -68,6 +68,7 @@ class TestServerTools(unittest.TestCase):
             "date": "2026-04-30",
             "tasks": "t",
             "notes": "n",
+            "groceries": "g",
             "finance": "f",
             "vitals": "v",
             "email_triage": "e",
