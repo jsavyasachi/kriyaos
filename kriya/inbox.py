@@ -38,11 +38,13 @@ def format_recent_errors(errors):
 
 def render_inbox(state_dir="state"):
     latest_tasks = latest_matching_file(state_dir, "tasks-")
+    latest_groceries = latest_matching_file(state_dir, "groceries-")
     latest_brief = latest_matching_file(state_dir, "daily-brief-")
     inbox_path = os.path.join(state_dir, "inbox.md")
     pending = format_pending_actions(list_pending_actions(state_dir)).strip()
     errors = format_recent_errors(read_recent_errors(state_dir)).strip()
     tasks = read_file_or_empty(latest_tasks) or "No tasks snapshot found."
+    groceries = read_file_or_empty(latest_groceries) or "No groceries snapshot found."
     triage = read_file_or_empty(inbox_path) or "No email triage found."
 
     return f"""# Kriya Inbox
@@ -55,6 +57,9 @@ def render_inbox(state_dir="state"):
 
 ## Latest Tasks
 {tasks}
+
+## Latest Groceries
+{groceries}
 
 ## Email Triage
 {triage}

@@ -37,6 +37,7 @@ CLI:
 - `python -m kriya email-triage`
 - `python -m kriya tasks`
 - `python -m kriya notes`
+- `python -m kriya groceries`
 - `python -m kriya finance`
 - `python -m kriya vitals`
 - `python -m kriya approvals`
@@ -44,7 +45,6 @@ CLI:
 - `python -m kriya execute <id>`
 - `python -m kriya reject <id>`
 - `python -m kriya sync-tasks`
-- `python -m kriya sync-groceries`
 - `python -m kriya poll`
 - `python -m kriya inbox`
 
@@ -54,6 +54,7 @@ MCP tools:
 - `email_triage`
 - `tasks`
 - `notes`
+- `groceries`
 - `finance`
 - `vitals`
 - `approvals`
@@ -61,7 +62,6 @@ MCP tools:
 - `execute`
 - `reject`
 - `sync_tasks`
-- `sync_groceries`
 - `poll`
 - `inbox`
 
@@ -71,6 +71,7 @@ MCP tools:
 - `state/inbox.md` - appended email triage sections
 - `state/tasks-YYYY-MM-DD.md` - Google Tasks snapshot
 - `state/notes-YYYY-MM-DD.md` - Google Keep notes snapshot
+- `state/groceries-YYYY-MM-DD.md` - Apple Reminders Groceries snapshot
 - `state/finance-YYYY-MM-DD.md` - f5e net-worth snapshot
 - `state/vitals-YYYY-MM-DD.md` - Apple Health vitals snapshot
 - `state/pending/*.json` - approval-gated proposed writes
@@ -113,7 +114,7 @@ MCP tools:
 - Google Tasks `update`, `complete`, and `delete` executors are registered.
 - Apple Reminders add/update/complete/delete adapters write through `osascript`.
 - `sync-tasks` writes Apple-side task changes inline and queues Google-side writes for approval.
-- `sync-groceries` writes Apple-side grocery changes inline and queues Google Keep full-note replacements for approval.
+- Apple Reminders `Groceries` snapshot is Apple-only; Google Keep is unsupported for this account/client.
 - Apple Calendar already reads Google calendars through the local Google account, so calendar sync is deferred unless duplicate-control logic is designed.
 
 ## Open Blockers
@@ -122,7 +123,7 @@ MCP tools:
   Re-auth with `https://www.googleapis.com/auth/keep.readonly`, then verify
   `gws keep notes list` and `python -m kriya notes`.
 - Launchd is scaffolded but not installed/validated as a real user agent.
-- Google Keep `Groceries` requires full Keep OAuth scope for approval-gated replacement writes.
+- Google Keep API scope is rejected for the current `@gmail.com` OAuth client, so Keep-backed groceries are unsupported.
 
 ## Proposed Next Plan
 
@@ -130,7 +131,7 @@ MCP tools:
 
 2. Change `sync-tasks` wiring from Apple Reminders `Reminders` to Apple Reminders `To do`.
 
-3. Smoke-test `python -m kriya sync-groceries` after Keep auth is fixed.
+3. Smoke-test `python -m kriya groceries` against real Reminders permissions.
 
 ## Design Notes
 
@@ -139,4 +140,4 @@ MCP tools:
 - The approval queue is the safety boundary between read-only intelligence and
   external writes.
 - Goose should call MCP tools; launchd should call CLI commands.
-- Current sync routing: Google Tasks `To Do` ↔ Apple Reminders `To do`; Google Keep `Groceries` ↔ Apple Reminders `Groceries`; Apple Reminders `Reminders` is Apple-only.
+- Current sync routing: Google Tasks `To Do` ↔ Apple Reminders `To do`; Apple Reminders `Groceries` and `Reminders` are Apple-only.

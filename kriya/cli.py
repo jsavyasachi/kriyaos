@@ -6,7 +6,7 @@ from kriya.email_triage import append_email_triage
 from kriya.finance import write_finance_snapshot
 from kriya.google_keep import write_notes_snapshot
 from kriya.google_tasks import write_tasks_snapshot
-from kriya.grocery_sync import format_grocery_sync_result, run_grocery_sync
+from kriya.groceries import write_groceries_snapshot
 from kriya.inbox import render_inbox
 from kriya.memory import add as memory_add
 from kriya.memory import get_all as memory_get_all
@@ -66,9 +66,9 @@ def build_parser():
     sync_tasks.add_argument("--state-dir", default="state")
     sync_tasks.add_argument("--action-limit", type=int, default=25)
 
-    sync_groceries = subparsers.add_parser("sync-groceries", help="Sync Google Keep Groceries and Apple Reminders")
-    sync_groceries.add_argument("--state-dir", default="state")
-    sync_groceries.add_argument("--action-limit", type=int, default=25)
+    groceries = subparsers.add_parser("groceries", help="Write an Apple Reminders Groceries snapshot")
+    groceries.add_argument("--state-dir", default="state")
+    groceries.add_argument("--date")
 
     memories = subparsers.add_parser("memories", help="List or add stored memories")
     memories.add_argument("--add", metavar="TEXT", help="Store a new memory")
@@ -143,11 +143,8 @@ def run_command(args):
     if args.command == "sync-tasks":
         print(format_task_sync_result(run_task_sync(state_dir=args.state_dir, action_limit=args.action_limit)), end="")
         return 0
-    if args.command == "sync-groceries":
-        print(
-            format_grocery_sync_result(run_grocery_sync(state_dir=args.state_dir, action_limit=args.action_limit)),
-            end="",
-        )
+    if args.command == "groceries":
+        write_groceries_snapshot(state_dir=args.state_dir, today=args.date)
         return 0
     if args.command == "approve":
         item = approve_action(args.id, args.state_dir)

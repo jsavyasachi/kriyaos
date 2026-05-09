@@ -13,7 +13,7 @@ from kriya.email_triage import append_email_triage
 from kriya.finance import get_networth_report, write_finance_snapshot
 from kriya.google_keep import write_notes_snapshot
 from kriya.google_tasks import format_tasks, get_open_tasks, write_tasks_snapshot
-from kriya.grocery_sync import format_grocery_sync_result, run_grocery_sync
+from kriya.groceries import write_groceries_snapshot
 from kriya.memory import add as memory_add
 from kriya.memory import search as memory_search
 from kriya.inbox import render_inbox
@@ -156,11 +156,11 @@ def sync_tasks() -> str:
 
 
 @mcp.tool()
-def sync_groceries() -> str:
+def groceries() -> str:
     """
-    Syncs Google Keep Groceries and Apple Reminders Groceries, queueing Google writes for approval.
+    Writes an Apple Reminders Groceries snapshot to state/groceries-YYYY-MM-DD.md.
     """
-    return format_grocery_sync_result(run_grocery_sync())
+    return write_groceries_snapshot()
 
 
 @mcp.tool()

@@ -6,9 +6,9 @@ SYNC_ROUTES: dict[str, dict[str, Any]] = {
         "apple": {"service": "reminders", "list": "To do"},
     },
     "groceries": {
-        "google": {"service": "keep", "note": "Groceries"},
         "apple": {"service": "reminders", "list": "Groceries"},
-        "blocked_by": "Google Keep OAuth scope",
+        "mode": "apple_only",
+        "unsupported_google_source": "Google Keep scope is rejected for the current @gmail.com OAuth client",
     },
     "reminders": {
         "apple": {"service": "reminders", "list": "Reminders"},

@@ -10,12 +10,11 @@ class TestSyncRoutes(unittest.TestCase):
         self.assertEqual(route["google"], {"service": "tasks", "list": "To Do"})
         self.assertEqual(route["apple"], {"service": "reminders", "list": "To do"})
 
-    def test_groceries_route_maps_keep_to_apple_groceries(self):
+    def test_groceries_route_is_apple_only(self):
         route = get_sync_route("groceries")
 
-        self.assertEqual(route["google"], {"service": "keep", "note": "Groceries"})
         self.assertEqual(route["apple"], {"service": "reminders", "list": "Groceries"})
-        self.assertEqual(route["blocked_by"], "Google Keep OAuth scope")
+        self.assertEqual(route["mode"], "apple_only")
 
     def test_reminders_route_is_apple_only(self):
         route = get_sync_route("reminders")

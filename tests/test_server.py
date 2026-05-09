@@ -97,15 +97,7 @@ class TestServerTools(unittest.TestCase):
         self.assertIn("Task sync complete: 0 planned actions", server.sync_tasks())
         mock_sync.assert_called_once_with()
 
-    @patch(
-        "kriya.server.run_grocery_sync",
-        return_value={
-            "aborted": False,
-            "action_count": 0,
-            "apple_results": [],
-            "queued_google": [],
-        },
-    )
-    def test_sync_groceries_tool(self, mock_sync):
-        self.assertIn("Grocery sync complete: 0 planned actions", server.sync_groceries())
-        mock_sync.assert_called_once_with()
+    @patch("kriya.server.write_groceries_snapshot", return_value="state/groceries-2026-05-09.md")
+    def test_groceries_tool(self, mock_write):
+        self.assertEqual(server.groceries(), "state/groceries-2026-05-09.md")
+        mock_write.assert_called_once_with()

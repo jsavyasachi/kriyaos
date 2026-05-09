@@ -21,6 +21,7 @@
 - **Triage Email CLI:** `python -m kriya email-triage`
 - **Tasks Snapshot CLI:** `python -m kriya tasks`
 - **Notes Snapshot CLI:** `python -m kriya notes`
+- **Groceries Snapshot CLI:** `python -m kriya groceries`
 - **Finance Snapshot CLI:** `python -m kriya finance`
 - **Vitals Snapshot CLI:** `python -m kriya vitals`
 - **List Pending Approvals:** `python -m kriya approvals`
@@ -28,7 +29,6 @@
 - **Execute Approved Action:** `python -m kriya execute <id>`
 - **Reject Pending Action:** `python -m kriya reject <id>`
 - **Sync Tasks:** `python -m kriya sync-tasks`
-- **Sync Groceries:** `python -m kriya sync-groceries`
 - **Poll OS State:** `python -m kriya poll`
 - **Render Inbox:** `python -m kriya inbox`
 - **Cost Ceiling Override:** `MAX_DAILY_USD=3.50 python -m kriya daily-brief`
@@ -42,6 +42,7 @@
 - `email_triage`
 - `tasks`
 - `notes`
+- `groceries`
 - `finance`
 - `vitals`
 - `approvals`
@@ -49,7 +50,6 @@
 - `execute`
 - `reject`
 - `sync_tasks`
-- `sync_groceries`
 - `poll`
 - `inbox`
 
@@ -68,6 +68,5 @@
 - 2026-05-05: Apple Calendar writes go through `osascript` since the `ical` CLI is read-only; if brittle, ship Tasks↔Reminders first and defer Calendar sync
 - 2026-05-09: Apple Calendar already reads Google calendars via the local Google account; do not add calendar sync unless duplicate-control logic is explicitly designed
 - 2026-05-09: Task sync wiring = Google Tasks `To Do` ↔ Apple Reminders list `To do`
-- 2026-05-09: Grocery sync wiring = Google Keep note/list `Groceries` ↔ Apple Reminders list `Groceries`; blocked until Keep OAuth scopes are fixed
-- 2026-05-09: Google Keep writes only expose create/delete through `gws`; grocery Apple→Google sync queues an approval-gated full Keep note replacement
+- 2026-05-09: Grocery source of truth = Apple Reminders list `Groceries`; Google Keep is unsupported because the Keep OAuth scope is rejected for the current `@gmail.com` OAuth client
 - 2026-05-09: Apple Reminders list `Reminders` is Apple-only until the user assigns an external target
