@@ -64,3 +64,7 @@
 - 2026-05-05: Google Keep failure is treated as optional (omit on missing scope), mirroring Memory rather than fail-fast Workspace policy
 - 2026-05-05: every Google write stays gated by the `state/pending/*.json` approval queue; Apple writes execute inline (local, reversible) but are audited
 - 2026-05-05: Apple Calendar writes go through `osascript` since the `ical` CLI is read-only; if brittle, ship Tasks↔Reminders first and defer Calendar sync
+- 2026-05-09: Apple Calendar already reads Google calendars via the local Google account; do not add calendar sync unless duplicate-control logic is explicitly designed
+- 2026-05-09: Task sync wiring = Google Tasks `To Do` ↔ Apple Reminders list `To do`
+- 2026-05-09: Grocery sync wiring = Google Keep note/list `Groceries` ↔ Apple Reminders list `Groceries`; blocked until Keep OAuth scopes are fixed
+- 2026-05-09: Apple Reminders list `Reminders` is Apple-only until the user assigns an external target

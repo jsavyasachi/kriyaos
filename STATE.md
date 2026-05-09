@@ -111,6 +111,7 @@ MCP tools:
 - Google Tasks `update`, `complete`, and `delete` executors are registered.
 - Apple Reminders add/update/complete/delete adapters write through `osascript`.
 - `sync-tasks` writes Apple-side task changes inline and queues Google-side writes for approval.
+- Apple Calendar already reads Google calendars through the local Google account, so calendar sync is deferred unless duplicate-control logic is designed.
 
 ## Open Blockers
 
@@ -118,15 +119,15 @@ MCP tools:
   Re-auth with `https://www.googleapis.com/auth/keep.readonly`, then verify
   `gws keep notes list` and `python -m kriya notes`.
 - Launchd is scaffolded but not installed/validated as a real user agent.
-- Apple Calendar write reliability is not validated yet.
+- Google Keep `Groceries` cannot be read until Keep OAuth is fixed, blocking grocery sync.
 
 ## Proposed Next Plan
 
 1. Re-auth Keep and smoke-test `python -m kriya notes`.
 
-2. Smoke-test `python -m kriya sync-tasks` against real Reminders permissions.
+2. Change `sync-tasks` wiring from Apple Reminders `Reminders` to Apple Reminders `To do`.
 
-3. Add Calendar sync after Tasks↔Reminders converges.
+3. Add Google Keep `Groceries` ↔ Apple Reminders `Groceries` sync after Keep auth is fixed.
 
 ## Design Notes
 
@@ -135,3 +136,4 @@ MCP tools:
 - The approval queue is the safety boundary between read-only intelligence and
   external writes.
 - Goose should call MCP tools; launchd should call CLI commands.
+- Current sync routing: Google Tasks `To Do` ↔ Apple Reminders `To do`; Google Keep `Groceries` ↔ Apple Reminders `Groceries`; Apple Reminders `Reminders` is Apple-only.
