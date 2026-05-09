@@ -1,10 +1,15 @@
 import asyncio
+import importlib.util
 import os
 import tempfile
 import unittest
 from unittest.mock import patch
 
 from kriya.approvals import create_pending_action, pending_path
+
+if importlib.util.find_spec("textual") is None:
+    raise unittest.SkipTest("Textual is not installed")
+
 from kriya.tui.app import KriyaApp, RefreshState
 
 

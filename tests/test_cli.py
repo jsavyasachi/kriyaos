@@ -1,4 +1,5 @@
 import contextlib
+import importlib.util
 import io
 import unittest
 from unittest.mock import patch
@@ -148,6 +149,14 @@ class TestCli(unittest.TestCase):
         self.assertEqual(result, 0)
         mock_sync.assert_called_once_with(state_dir="tmp-state", action_limit=2)
         self.assertIn("Task sync complete: 0 planned actions", stdout.getvalue())
+
+    @unittest.skipIf(importlib.util.find_spec("textual") is None, "Textual is not installed")
+    @patch("kriya.tui.app.run_tui")
+    def test_tui_command(self, mock_tui):
+        result = main(["tui", "--state-dir", "tmp-state"])
+
+        self.assertEqual(result, 0)
+        mock_tui.assert_called_once_with(state_dir="tmp-state")
 
     @patch("kriya.cli.write_groceries_snapshot", return_value="tmp-state/groceries-2026-05-09.md")
     def test_groceries_command(self, mock_write):

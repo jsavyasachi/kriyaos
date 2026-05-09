@@ -46,6 +46,7 @@ CLI:
 - `python -m kriya sync-tasks`
 - `python -m kriya poll`
 - `python -m kriya inbox`
+- `python -m kriya tui`
 
 MCP tools:
 
@@ -110,6 +111,7 @@ MCP tools:
 - Apple Reminders add/update/complete/delete adapters write through `osascript`.
 - `sync-tasks` writes Apple-side task changes inline and queues Google-side writes for approval.
 - Apple Reminders `Groceries` snapshot.
+- Textual TUI dashboard launched by `python -m kriya tui`.
 - Apple Calendar already reads Google calendars through the local Google account, so calendar sync is deferred unless duplicate-control logic is designed.
 - Google Keep integration removed: `keep.readonly` scope is rejected for personal `@gmail.com` OAuth clients.
 
@@ -123,7 +125,7 @@ MCP tools:
 
 2. Smoke-test `python -m kriya groceries` and `python -m kriya sync-tasks` against real Reminders permissions.
 
-3. Start Slice 4: Textual TUI dashboard (viewer panes plus interactive approvals pane).
+3. Smoke-test `python -m kriya tui` in a real terminal.
 
 ## Design Notes
 

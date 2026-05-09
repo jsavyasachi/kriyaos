@@ -30,6 +30,7 @@
 - **Sync Tasks:** `python -m kriya sync-tasks`
 - **Poll OS State:** `python -m kriya poll`
 - **Render Inbox:** `python -m kriya inbox`
+- **TUI:** `python -m kriya tui`
 - **Cost Ceiling Override:** `MAX_DAILY_USD=3.50 python -m kriya daily-brief`
 - **Lint:** `uv run --extra dev ruff check .`
 - **Test:** `python -m unittest discover`
@@ -69,3 +70,9 @@
 - 2026-05-09: Grocery source of truth = Apple Reminders list `Groceries`; Google Keep is unsupported because the Keep OAuth scope is rejected for the current `@gmail.com` OAuth client
 - 2026-05-09: Apple Reminders list `Reminders` is Apple-only until the user assigns an external target
 - 2026-05-09: Google Keep integration removed; Keep API rejects `keep.readonly` scope on personal `@gmail.com` OAuth clients (Workspace-only), so `notes` CLI/MCP and Keep enrichment in the daily brief were ripped out
+- 2026-05-09: TUI is hybrid master/detail with a persistent approvals drawer (left rail = surfaces, right pane = detail)
+- 2026-05-09: TUI auto-reloads on filesystem changes via `watchdog`; no LLM-touching auto-poll
+- 2026-05-09: TUI is a control surface: `p` triggers `run_poll`, `s` triggers `run_task_sync`, `a`/`r`/`x` act on approvals; long-running ops run in `@work(thread=True, exclusive=True)` workers
+- 2026-05-09: TUI supports mouse first-class alongside keyboard (Textual handles natively)
+- 2026-05-09: TUI dependencies (`textual`, `watchdog`) live behind a `[tui]` optional-dependencies extra in `pyproject.toml`; core CLI stays light
+- 2026-05-09: TUI lives in `kriya/tui/` and is launched via `python -m kriya tui`; no MCP tool exposes it (interactive-only)

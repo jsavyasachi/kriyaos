@@ -7,6 +7,7 @@ Agentic personal OS.
 <a href="https://goose-docs.ai/"><img src="https://img.shields.io/badge/Goose-000000?style=flat&logo=block&logoColor=white" alt="Goose" /></a>
 <a href="https://mem0.ai/"><img src="https://img.shields.io/badge/Mem0-000000?style=flat&logo=database&logoColor=white" alt="Mem0" /></a>
 <a href="https://python.org/"><img src="https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white" alt="Python" /></a>
+<a href="https://textual.textualize.io/"><img src="https://img.shields.io/badge/Textual-2E8B57?style=flat&logo=python&logoColor=white" alt="Textual" /></a>
 
 ## Commands
 
@@ -23,6 +24,12 @@ Agentic personal OS.
 - `python -m kriya sync-tasks`
 - `python -m kriya poll`
 - `python -m kriya inbox`
+- `python -m kriya tui`
+
+## TUI
+
+- Install: `pip install -e ".[tui]"`
+- Launch: `python -m kriya tui`
 
 ## Configuration
 

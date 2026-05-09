@@ -60,6 +60,9 @@ def build_parser():
     sync_tasks.add_argument("--state-dir", default="state")
     sync_tasks.add_argument("--action-limit", type=int, default=25)
 
+    tui = subparsers.add_parser("tui", help="Launch the interactive Textual dashboard")
+    tui.add_argument("--state-dir", default="state")
+
     groceries = subparsers.add_parser("groceries", help="Write an Apple Reminders Groceries snapshot")
     groceries.add_argument("--state-dir", default="state")
     groceries.add_argument("--date")
@@ -133,6 +136,14 @@ def run_command(args):
         return 0
     if args.command == "sync-tasks":
         print(format_task_sync_result(run_task_sync(state_dir=args.state_dir, action_limit=args.action_limit)), end="")
+        return 0
+    if args.command == "tui":
+        try:
+            from kriya.tui.app import run_tui
+        except ImportError:
+            print('TUI dependencies missing. Install with: pip install -e ".[tui]"')
+            return 1
+        run_tui(state_dir=args.state_dir)
         return 0
     if args.command == "groceries":
         write_groceries_snapshot(state_dir=args.state_dir, today=args.date)
