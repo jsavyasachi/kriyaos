@@ -17,6 +17,10 @@ dependencies = [
 dev = [
     "ruff>=0.8",
 ]
+tui = [
+    "textual>=0.85",
+    "watchdog>=4.0",
+]
 
 [project.scripts]
 kriya = "kriya.cli:main"
