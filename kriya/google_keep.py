@@ -3,6 +3,7 @@ import os
 from typing import Any
 
 from kriya.daily_brief import run_gws
+from kriya.execute import register
 from kriya.utils.errors import log_error
 
 
@@ -14,6 +15,71 @@ def get_notes(page_size: int = 20, state_dir: str = "state") -> list[dict[str, A
     except Exception as e:
         log_error("keep.notes", str(e), {"page_size": page_size}, state_dir)
         raise
+
+
+def get_note_by_title(title: str, page_size: int = 100, state_dir: str = "state") -> dict[str, Any] | None:
+    for note in get_notes(page_size=page_size, state_dir=state_dir):
+        if note.get("title") == title:
+            if note.get("name"):
+                return run_gws("keep.notes.get", {"name": note["name"]})
+            return note
+    return None
+
+
+def get_grocery_items(note_title: str = "Groceries", state_dir: str = "state") -> dict[str, Any] | None:
+    note = get_note_by_title(note_title, state_dir=state_dir)
+    if note is None:
+        return None
+    return {
+        "name": note.get("name"),
+        "title": note.get("title", note_title),
+        "updated": note.get("updateTime"),
+        "items": normalize_keep_list_items(note),
+    }
+
+
+def normalize_keep_list_items(note: dict[str, Any]) -> list[dict[str, Any]]:
+    list_items = note.get("body", {}).get("list", {}).get("listItems")
+    list_items = list_items or note.get("body", {}).get("listContent", {}).get("listItems") or []
+    items = []
+    for index, item in enumerate(list_items):
+        title = item.get("text", {}).get("text") or item.get("textContent", {}).get("text")
+        if not title:
+            continue
+        items.append(
+            {
+                "id": item.get("name") or item.get("id") or f"keep-{index}",
+                "title": title.strip(),
+                "completed": bool(item.get("checked", False)),
+                "updated": note.get("updateTime"),
+            }
+        )
+    return items
+
+
+@register("keep.replace_note")
+def replace_note(args: dict[str, Any]) -> dict[str, Any]:
+    if args.get("name"):
+        run_gws("keep.notes.delete", {"name": args["name"]})
+    return run_gws("keep.notes.create", _keep_note_body(args.get("title", "Groceries"), args.get("items", [])))
+
+
+def _keep_note_body(title: str, items: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "title": title,
+        "body": {
+            "list": {
+                "listItems": [
+                    {
+                        "text": {"text": item.get("title", "")},
+                        "checked": bool(item.get("completed", False)),
+                    }
+                    for item in items
+                    if item.get("title")
+                ]
+            }
+        },
+    }
 
 
 def _body_text(note: dict[str, Any]) -> str:

@@ -21,6 +21,7 @@ Agentic personal OS.
 - `python -m kriya execute <id>`
 - `python -m kriya reject <id>`
 - `python -m kriya sync-tasks`
+- `python -m kriya sync-groceries`
 - `python -m kriya poll`
 - `python -m kriya inbox`
 

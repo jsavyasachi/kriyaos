@@ -38,6 +38,23 @@ def get_reminders_for_sync():
     return [normalize_reminder_for_sync(item) for item in raw]
 
 
+def get_reminders_for_list(list_name: str):
+    """Returns reminders from one Apple Reminders list, or None if rem is not installed."""
+    try:
+        result = subprocess.run(
+            ["rem", "list", "--list", list_name, "-o", "json"],
+            capture_output=True, text=True, check=True,
+        )
+        raw = json.loads(result.stdout)
+        log_tool_call("rem.list", {"list": list_name}, "ok", {"count": len(raw)})
+        return [normalize_reminder_for_sync(item) for item in raw]
+    except FileNotFoundError:
+        return None
+    except Exception as e:
+        log_error("apple_reminders", str(e), {"list": list_name})
+        return []
+
+
 def normalize_reminder_for_sync(reminder: dict[str, Any]) -> dict[str, Any]:
     due = reminder.get("due_date") or ""
     return {

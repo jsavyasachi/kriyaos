@@ -170,6 +170,23 @@ class TestCli(unittest.TestCase):
         mock_sync.assert_called_once_with(state_dir="tmp-state", action_limit=2)
         self.assertIn("Task sync complete: 0 planned actions", stdout.getvalue())
 
+    @patch(
+        "kriya.cli.run_grocery_sync",
+        return_value={
+            "aborted": False,
+            "action_count": 0,
+            "apple_results": [],
+            "queued_google": [],
+        },
+    )
+    def test_sync_groceries_command(self, mock_sync):
+        with contextlib.redirect_stdout(io.StringIO()) as stdout:
+            result = main(["sync-groceries", "--state-dir", "tmp-state", "--action-limit", "2"])
+
+        self.assertEqual(result, 0)
+        mock_sync.assert_called_once_with(state_dir="tmp-state", action_limit=2)
+        self.assertIn("Grocery sync complete: 0 planned actions", stdout.getvalue())
+
     @patch("kriya.cli.approve_action", return_value={"id": "abc", "tool": "tasks.insert"})
     def test_approve_command_only_approves(self, mock_approve):
         with contextlib.redirect_stdout(io.StringIO()) as stdout:
