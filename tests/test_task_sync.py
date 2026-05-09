@@ -31,7 +31,7 @@ class TestTaskSync(unittest.TestCase):
 
         self.assertFalse(result["aborted"])
         self.assertEqual(result["apple_results"], [{"type": "create_apple", "uid": "apple-new"}])
-        mock_add.assert_called_once_with("Reminders", "File taxes", due="2026-05-10", notes="Use report")
+        mock_add.assert_called_once_with("To do", "File taxes", due="2026-05-10", notes="Use report")
         self.assertEqual(mappings["tasks"][0]["apple_uid"], "apple-new")
 
     @patch("kriya.task_sync.get_reminders_for_sync")

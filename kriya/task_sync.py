@@ -8,6 +8,8 @@ from kriya.google_tasks import get_tasks_for_sync
 from kriya.sync import load_mappings, plan_task_sync, save_mappings
 from kriya.utils.audit import log_tool_call
 
+APPLE_TODO_LIST = "To do"
+
 
 def run_task_sync(state_dir: str = "state", action_limit: int = 25) -> dict[str, Any]:
     google_tasks = get_tasks_for_sync()
@@ -80,7 +82,7 @@ def format_task_sync_result(result: dict[str, Any]) -> str:
 def _apply_apple_action(action: dict[str, Any], mappings: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:
     task = action.get("task", {})
     if action["type"] == "create_apple":
-        uid = add_reminder("Reminders", task["title"], due=task.get("due"), notes=task.get("notes"))
+        uid = add_reminder(APPLE_TODO_LIST, task["title"], due=task.get("due"), notes=task.get("notes"))
         _set_mapping_apple_uid(mappings, action["google_id"], uid)
         return {"type": action["type"], "uid": uid}
     if action["type"] == "update_apple":
