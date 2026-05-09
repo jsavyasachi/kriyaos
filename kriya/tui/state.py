@@ -4,7 +4,7 @@ import os
 from dataclasses import dataclass
 from typing import Literal
 
-from kriya.approvals import list_pending_actions
+from kriya.approvals import list_by_status
 from kriya.inbox import latest_matching_file, read_file_or_empty
 from kriya.utils.errors import read_recent_errors
 
@@ -47,7 +47,7 @@ def load_surface(surface: Surface, state_dir: str = "state") -> str:
 
 
 def load_approvals(state_dir: str = "state") -> list[dict]:
-    return list_pending_actions(state_dir)
+    return list_by_status("pending", state_dir) + list_by_status("approved", state_dir)
 
 
 def format_errors(errors: list[dict]) -> str:
