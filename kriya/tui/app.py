@@ -4,9 +4,9 @@ from typing import Any
 
 from textual import work
 from textual.app import App, ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.message import Message
-from textual.widgets import Button, DataTable, Footer, Header, Label, ListItem, ListView, Markdown, Static
+from textual.widgets import DataTable, Footer, Header, Label, ListItem, ListView, Markdown
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
@@ -14,7 +14,15 @@ from kriya.approvals import approve_action, reject_action
 from kriya.poll import format_poll_result, run_poll
 from kriya.task_sync import format_task_sync_result, run_task_sync
 from kriya.tui.bindings import BINDINGS
-from kriya.tui.state import Surface, approval_markdown, approval_rows, discover_surfaces, load_approvals, load_surface, surface_row_label
+from kriya.tui.state import (
+    Surface,
+    approval_markdown,
+    approval_rows,
+    discover_surfaces,
+    load_approvals,
+    load_surface,
+    surface_row_label,
+)
 
 
 class RefreshState(Message):
@@ -49,6 +57,7 @@ class KriyaApp(App[None]):
     CSS = """
     Screen {
         layout: vertical;
+        background: $surface;
     }
 
     #main {
@@ -56,40 +65,54 @@ class KriyaApp(App[None]):
     }
 
     #rail {
-        width: 28;
-        border: solid $primary;
+        width: 26;
+        background: $panel;
+        padding: 1 0;
+    }
+
+    #rail > ListItem {
+        padding: 0 2;
+    }
+
+    #rail > ListItem.--highlight {
+        background: $accent 30%;
+    }
+
+    #detail-scroll {
+        width: 1fr;
     }
 
     #detail {
+        padding: 1 2;
+        height: auto;
+    }
+
+    #approval-preview-scroll {
         width: 1fr;
-        border: solid $secondary;
     }
 
-    #approvals {
-        height: 14;
-        border: solid $accent;
+    #drawer {
+        height: 35%;
+        background: $panel;
+        border-top: tall $primary;
     }
 
-    #global-actions,
-    #approval-actions {
-        height: 3;
+    #drawer-body {
+        height: 1fr;
     }
 
-    Button {
-        margin: 0 1;
+    #approval-table {
+        width: 1fr;
+        background: $panel;
     }
 
     #approval-preview {
-        height: 10;
-        border: solid $accent;
-    }
-
-    #status {
-        height: 1;
-        padding: 0 1;
+        width: 1fr;
+        padding: 0 2;
     }
     """
 
+    TITLE = "Kriya OS"
     BINDINGS = BINDINGS
 
     def __init__(self, state_dir: str = "state", watch: bool = True) -> None:
@@ -102,27 +125,24 @@ class KriyaApp(App[None]):
         self._watch_handler: _StateChangeHandler | None = None
 
     def compose(self) -> ComposeResult:
-        yield Header(show_clock=True)
-        with Horizontal(id="global-actions"):
-            yield Button("Poll", id="poll-button", variant="primary")
-            yield Button("Sync Tasks", id="sync-button")
+        yield Header()
         with Horizontal(id="main"):
             yield ListView(id="rail")
-            yield Markdown("# Kriya OS\n\nLoading state...", id="detail")
-        with Vertical(id="approvals"):
-            yield Label("Approvals")
-            yield DataTable(id="approval-table")
-            with Horizontal(id="approval-actions"):
-                yield Button("Approve", id="approve-button", variant="success")
-                yield Button("Reject", id="reject-button", variant="error")
-                yield Button("Execute", id="execute-button", variant="warning")
-        yield Markdown("# Approval\n\nNo approval selected.", id="approval-preview")
-        yield Static("Ready", id="status")
+            with VerticalScroll(id="detail-scroll"):
+                yield Markdown("# Kriya OS\n\nLoading state...", id="detail")
+        with Vertical(id="drawer"):
+            with Horizontal(id="drawer-body"):
+                yield DataTable(id="approval-table")
+                with VerticalScroll(id="approval-preview-scroll"):
+                    yield Markdown("_No approval selected._", id="approval-preview")
         yield Footer()
 
     def on_mount(self) -> None:
+        self.sub_title = "ready"
         table = self.query_one("#approval-table", DataTable)
         table.cursor_type = "row"
+        table.zebra_stripes = True
+        table.show_header = True
         table.add_columns("id", "tool", "intent", "status")
         self.refresh_state()
         self._start_watcher()
@@ -134,26 +154,22 @@ class KriyaApp(App[None]):
         self.refresh_state()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
-        rail = self.query_one("#rail", ListView)
-        index = rail.index
+        index = self.query_one("#rail", ListView).index
         if index is None or index >= len(self.surfaces):
             return
         self.show_surface(self.surfaces[index])
 
-    def on_data_table_row_selected(self, _event: DataTable.RowSelected) -> None:
+    def on_list_view_highlighted(self, event: ListView.Highlighted) -> None:
+        index = self.query_one("#rail", ListView).index
+        if index is None or index >= len(self.surfaces):
+            return
+        self.show_surface(self.surfaces[index])
+
+    def on_data_table_row_highlighted(self, _event: DataTable.RowHighlighted) -> None:
         self.preview_selected_approval()
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        actions = {
-            "poll-button": self.action_poll,
-            "sync-button": self.action_sync_tasks,
-            "approve-button": self.action_approve_approval,
-            "reject-button": self.action_reject_approval,
-            "execute-button": self.action_execute_approval,
-        }
-        action = actions.get(event.button.id or "")
-        if action:
-            action()
+    def on_data_table_row_selected(self, _event: DataTable.RowSelected) -> None:
+        self.preview_selected_approval()
 
     def action_select_or_preview(self) -> None:
         focused = self.focused
@@ -166,37 +182,37 @@ class KriyaApp(App[None]):
         if isinstance(self.focused, DataTable):
             self.action_reject_approval()
         else:
-            self.refresh_state("Reloaded")
+            self.refresh_state("reloaded")
 
     def action_approve_approval(self) -> None:
         item = self.selected_approval()
         if not item:
-            self.set_status("No approval selected")
+            self.set_status("no approval selected")
             return
         if item.get("status") != "pending":
-            self.set_status(f"Approval {item.get('id', '')[:8]} is not pending")
+            self.set_status(f"{item.get('id', '')[:8]} not pending")
             return
         approve_action(item["id"], self.state_dir)
-        self.refresh_state(f"Approved {item['id'][:8]}")
+        self.refresh_state(f"approved {item['id'][:8]}")
 
     def action_reject_approval(self) -> None:
         item = self.selected_approval()
         if not item:
-            self.set_status("No approval selected")
+            self.set_status("no approval selected")
             return
         if item.get("status") not in {"pending", "approved"}:
-            self.set_status(f"Approval {item.get('id', '')[:8]} cannot be rejected")
+            self.set_status(f"{item.get('id', '')[:8]} cannot be rejected")
             return
         reject_action(item["id"], self.state_dir)
-        self.refresh_state(f"Rejected {item['id'][:8]}")
+        self.refresh_state(f"rejected {item['id'][:8]}")
 
     def action_execute_approval(self) -> None:
         item = self.selected_approval()
         if not item:
-            self.set_status("No approval selected")
+            self.set_status("no approval selected")
             return
         if item.get("status") != "approved":
-            self.set_status(f"Approval {item.get('id', '')[:8]} must be approved first")
+            self.set_status(f"{item.get('id', '')[:8]} must be approved first")
             return
         self.execute_approval(item["id"])
 
@@ -212,7 +228,8 @@ class KriyaApp(App[None]):
         self.refresh_rail()
         self.refresh_approvals()
         if self.surfaces:
-            index = self.query_one("#rail", ListView).index or 0
+            rail = self.query_one("#rail", ListView)
+            index = rail.index or 0
             self.show_surface(self.surfaces[min(index, len(self.surfaces) - 1)])
         if status:
             self.set_status(status)
@@ -228,7 +245,13 @@ class KriyaApp(App[None]):
     def refresh_approvals(self) -> None:
         table = self.query_one("#approval-table", DataTable)
         table.clear(columns=False)
-        for row in approval_rows(self.approvals):
+        rows = approval_rows(self.approvals)
+        if not rows:
+            table.border_title = "Approvals (none)"
+        else:
+            pending = sum(1 for a in self.approvals if a.get("status") == "pending")
+            table.border_title = f"Approvals ({pending} pending / {len(rows)} total)"
+        for row in rows:
             table.add_row(*row)
         self.preview_selected_approval()
 
@@ -250,30 +273,30 @@ class KriyaApp(App[None]):
         preview.update(approval_markdown(self.selected_approval()))
 
     def set_status(self, message: str) -> None:
-        self.query_one("#status", Static).update(message)
+        self.sub_title = message
 
     @work(thread=True, exclusive=True, group="poll")
     def run_poll_worker(self) -> None:
-        self.call_from_thread(self.set_status, "Polling...")
+        self.call_from_thread(self.set_status, "polling...")
         result = run_poll(state_dir=self.state_dir)
         self.call_from_thread(self.set_status, format_poll_result(result).splitlines()[0])
         self.call_from_thread(self.post_message, RefreshState())
 
     @work(thread=True, exclusive=True, group="sync")
     def run_sync_worker(self) -> None:
-        self.call_from_thread(self.set_status, "Syncing tasks...")
+        self.call_from_thread(self.set_status, "syncing tasks...")
         result = run_task_sync(state_dir=self.state_dir)
         self.call_from_thread(self.set_status, format_task_sync_result(result).splitlines()[0])
         self.call_from_thread(self.post_message, RefreshState())
 
     @work(thread=True, exclusive=True, group="execute")
     def execute_approval(self, approval_id: str) -> None:
-        self.call_from_thread(self.set_status, f"Executing {approval_id[:8]}...")
+        self.call_from_thread(self.set_status, f"executing {approval_id[:8]}...")
         import kriya.google_tasks  # noqa: F401
         from kriya.execute import execute_action
 
         execute_action(approval_id, self.state_dir)
-        self.call_from_thread(self.set_status, f"Executed {approval_id[:8]}")
+        self.call_from_thread(self.set_status, f"executed {approval_id[:8]}")
         self.call_from_thread(self.post_message, RefreshState())
 
     def _start_watcher(self) -> None:

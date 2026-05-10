@@ -63,7 +63,7 @@ class TestTuiState(unittest.TestCase):
     def test_surface_row_label(self):
         label = surface_row_label(Surface("tasks", "Tasks", "tasks-2026-05-09.md", "markdown"), datetime.date(2026, 5, 9))
 
-        self.assertEqual(label, "[+] Tasks")
+        self.assertEqual(label, "●  Tasks")
 
     def test_approvals_helpers(self):
         with tempfile.TemporaryDirectory() as state_dir:

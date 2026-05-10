@@ -78,8 +78,8 @@ def freshness_label(surface: Surface, today: datetime.date | None = None) -> str
 
 
 def surface_row_label(surface: Surface, today: datetime.date | None = None) -> str:
-    marker = {"ok": "[+]", "old": "[.]", "stale": "[!]", "--": "[ ]", "?": "[?]"}[freshness_label(surface, today)]
-    return f"{marker} {surface.title}"
+    marker = {"ok": "●", "old": "◐", "stale": "○", "--": "·", "?": "·"}[freshness_label(surface, today)]
+    return f"{marker}  {surface.title}"
 
 
 def approval_rows(approvals: list[dict]) -> list[tuple[str, str, str, str]]:
