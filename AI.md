@@ -76,3 +76,6 @@
 - 2026-05-09: TUI supports mouse first-class alongside keyboard (Textual handles natively)
 - 2026-05-09: TUI dependencies (`textual`, `watchdog`) live behind a `[tui]` optional-dependencies extra in `pyproject.toml`; core CLI stays light
 - 2026-05-09: TUI lives in `kriya/tui/` and is launched via `python -m kriya tui`; no MCP tool exposes it (interactive-only)
+- 2026-05-09: Google Keep is unsupported for this account/client; Apple Reminders `Groceries` is source of truth
+- 2026-05-09: Calendar sync remains deferred because Apple Calendar already reads Google calendars locally
+- 2026-05-09: TUI implementation as shipped is not acceptable to user and needs reassessment before further TUI work
