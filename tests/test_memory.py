@@ -42,32 +42,41 @@ class TestMemory(unittest.TestCase):
         self.assertEqual(len(results), 2)
         self.assertEqual(results[0]["memory"], "Prefers morning meetings")
 
-    @patch("kriya.memory.get_client", return_value=None)
-    def test_add_returns_false_when_no_client(self, _):
+    @patch("kriya.memory.get_client", side_effect=RuntimeError("no client"))
+    def test_add_returns_false_when_init_fails(self, _):
         from kriya.memory import add
-        with self.assertRaises(AttributeError):
-            add("anything")
+        self.assertFalse(add("anything"))
 
-    @patch("kriya.memory.get_client", return_value=None)
-    def test_search_returns_empty_when_no_client(self, _):
+    @patch("kriya.memory.get_client", side_effect=RuntimeError("no client"))
+    def test_search_returns_empty_when_init_fails(self, _):
         from kriya.memory import search
-        with self.assertRaises(AttributeError):
-            search("anything")
+        self.assertEqual(search("anything"), [])
 
-    @patch("kriya.memory.get_client", return_value=None)
-    def test_get_all_returns_empty_when_no_client(self, _):
+    @patch("kriya.memory.get_client", side_effect=RuntimeError("no client"))
+    def test_get_all_returns_empty_when_init_fails(self, _):
         from kriya.memory import get_all
-        with self.assertRaises(AttributeError):
-            get_all()
+        self.assertEqual(get_all(), [])
 
     @patch("kriya.memory.log_error")
-    def test_get_client_raises_on_init_failure(self, _log_error):
+    @patch("kriya.memory._ollama_reachable", return_value=True)
+    def test_get_client_raises_on_init_failure(self, _reach, _log_error):
         import kriya.memory as memory
 
         memory._client = None
+        memory._init_failed = False
         with patch.dict("sys.modules", {"mem0": None}):
             with self.assertRaises(ModuleNotFoundError):
                 memory.get_client()
+        memory._init_failed = False
+
+    @patch("kriya.memory._ollama_reachable", return_value=False)
+    def test_get_client_returns_none_when_ollama_unreachable(self, _reach):
+        import kriya.memory as memory
+
+        memory._client = None
+        memory._init_failed = False
+        self.assertIsNone(memory.get_client())
+        memory._init_failed = False
 
 
 class TestFormatMemories(unittest.TestCase):
