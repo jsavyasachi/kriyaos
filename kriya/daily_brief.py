@@ -2,6 +2,7 @@ import subprocess
 import json
 import datetime
 import os
+import shutil
 import contextlib
 import io
 
@@ -10,8 +11,23 @@ from kriya.utils.errors import log_error, read_recent_errors
 from kriya.utils.usage import cost_ceiling_reached, daily_spend_usd, parse_daily_limit
 
 
+_GWS_FALLBACK_DIRS = ("/opt/homebrew/bin", "/usr/local/bin", "/Users/savya/.local/bin")
+
+
+def _resolve_gws() -> str:
+    found = shutil.which("gws")
+    if found:
+        return found
+    for directory in _GWS_FALLBACK_DIRS:
+        candidate = os.path.join(directory, "gws")
+        if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+            return candidate
+    return "gws"
+
+
 def run_gws(tool, params):
-    cmd = ["gws", *tool.split("."), "--params", json.dumps(params)]
+    gws_bin = _resolve_gws()
+    cmd = [gws_bin, *tool.split("."), "--params", json.dumps(params)]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         data = json.loads(result.stdout) if result.stdout.strip() else {}
@@ -26,7 +42,7 @@ def run_gws(tool, params):
         log_tool_call(f"gws.{tool}", params, "ok", summary)
         return data
     except FileNotFoundError as e:
-        message = "gws CLI not found on PATH"
+        message = f"gws CLI not found (tried {gws_bin}, PATH={os.environ.get('PATH', '')[:120]})"
         log_tool_call(f"gws.{tool}", params, "error", error=message)
         raise RuntimeError(message) from e
     except Exception as e:
