@@ -17,14 +17,18 @@ class TestGroceries(unittest.TestCase):
     def test_format_groceries_handles_empty(self):
         self.assertEqual(format_groceries([]), "No groceries found.\n")
 
-    def test_format_groceries_marks_completion(self):
+    def test_format_groceries_drops_completed(self):
         content = format_groceries([
             {"title": "Milk", "completed": False},
             {"title": "Eggs", "completed": True},
         ])
 
-        self.assertIn("- [ ] Milk", content)
-        self.assertIn("- [x] Eggs", content)
+        self.assertIn("- Milk", content)
+        self.assertNotIn("Eggs", content)
+
+    def test_format_groceries_returns_empty_message_when_all_completed(self):
+        content = format_groceries([{"title": "Eggs", "completed": True}])
+        self.assertEqual(content, "No groceries found.\n")
 
     @patch("kriya.groceries.get_groceries", return_value=[{"title": "Milk", "completed": False}])
     def test_write_groceries_snapshot(self, _mock_get):
@@ -37,7 +41,7 @@ class TestGroceries(unittest.TestCase):
 
         self.assertTrue(path.endswith("groceries-2026-05-09.md"))
         self.assertIn("# Groceries: 2026-05-09", content)
-        self.assertIn("- [ ] Milk", content)
+        self.assertIn("- Milk", content)
 
 
 if __name__ == "__main__":

@@ -13,13 +13,10 @@ def get_groceries() -> list[dict[str, Any]]:
 
 
 def format_groceries(items: list[dict[str, Any]]) -> str:
-    if not items:
+    open_items = [item for item in items if not item.get("completed")]
+    if not open_items:
         return "No groceries found.\n"
-
-    lines = []
-    for item in items:
-        marker = "[x]" if item.get("completed") else "[ ]"
-        lines.append(f"- {marker} {item.get('title', '(No Title)')}")
+    lines = [f"- {item.get('title', '(No Title)')}" for item in open_items]
     return "\n".join(lines) + "\n"
 
 

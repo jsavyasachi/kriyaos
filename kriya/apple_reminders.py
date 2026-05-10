@@ -38,15 +38,15 @@ def get_reminders_for_sync():
     return [normalize_reminder_for_sync(item) for item in raw]
 
 
-def get_reminders_for_list(list_name: str):
+def get_reminders_for_list(list_name: str, include_completed: bool = False):
     """Returns reminders from one Apple Reminders list, or None if rem is not installed."""
+    cmd = ["rem", "list", "--list", list_name, "-o", "json"]
+    if not include_completed:
+        cmd.append("--incomplete")
     try:
-        result = subprocess.run(
-            ["rem", "list", "--list", list_name, "-o", "json"],
-            capture_output=True, text=True, check=True,
-        )
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         raw = json.loads(result.stdout)
-        log_tool_call("rem.list", {"list": list_name}, "ok", {"count": len(raw)})
+        log_tool_call("rem.list", {"list": list_name, "incomplete": not include_completed}, "ok", {"count": len(raw)})
         return [normalize_reminder_for_sync(item) for item in raw]
     except FileNotFoundError:
         return None
