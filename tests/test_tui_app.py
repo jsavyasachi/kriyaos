@@ -56,6 +56,20 @@ class TestTuiApp(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(item["status"], "rejected")
 
+    async def test_approval_buttons_update_pending_files(self):
+        with tempfile.TemporaryDirectory() as state_dir:
+            approval_path = create_pending_action("tasks.insert", {"title": "Ship"}, "Because", "test", "ship", state_dir)
+
+            app = KriyaApp(state_dir=state_dir, watch=False)
+            async with app.run_test() as pilot:
+                await pilot.pause()
+                await pilot.click("#approve-button")
+                await pilot.pause()
+
+            item = self._read_pending(state_dir, self._approval_id_from_path(approval_path))
+
+        self.assertEqual(item["status"], "approved")
+
     async def test_poll_key_runs_worker(self):
         poll_result = {
             "date": "2026-05-09",
@@ -75,6 +89,45 @@ class TestTuiApp(unittest.IsolatedAsyncioTestCase):
                     await self._wait_until(lambda: mock_poll.called)
 
         mock_poll.assert_called_once_with(state_dir=state_dir)
+
+    async def test_poll_button_runs_worker(self):
+        poll_result = {
+            "date": "2026-05-09",
+            "tasks": "state/tasks.md",
+            "notes": "state/notes.md",
+            "groceries": "state/groceries.md",
+            "finance": "state/finance.md",
+            "vitals": "state/vitals.md",
+            "email_triage": "state/inbox.md",
+            "daily_brief": "state/daily.md",
+        }
+        with tempfile.TemporaryDirectory() as state_dir:
+            app = KriyaApp(state_dir=state_dir, watch=False)
+            with patch("kriya.tui.app.run_poll", return_value=poll_result) as mock_poll:
+                async with app.run_test() as pilot:
+                    await pilot.pause()
+                    await pilot.click("#poll-button")
+                    await self._wait_until(lambda: mock_poll.called)
+
+        mock_poll.assert_called_once_with(state_dir=state_dir)
+
+    async def test_sync_button_runs_worker(self):
+        sync_result = {
+            "aborted": False,
+            "action_count": 0,
+            "apple_results": [],
+            "queued_google": [],
+            "mappings": "state/sync/mappings.json",
+        }
+        with tempfile.TemporaryDirectory() as state_dir:
+            app = KriyaApp(state_dir=state_dir, watch=False)
+            with patch("kriya.tui.app.run_task_sync", return_value=sync_result) as mock_sync:
+                async with app.run_test() as pilot:
+                    await pilot.pause()
+                    await pilot.click("#sync-button")
+                    await self._wait_until(lambda: mock_sync.called)
+
+        mock_sync.assert_called_once_with(state_dir=state_dir)
 
     async def test_refresh_message_reloads_surfaces(self):
         with tempfile.TemporaryDirectory() as state_dir:

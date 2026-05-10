@@ -6,7 +6,7 @@ from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.message import Message
-from textual.widgets import DataTable, Footer, Header, Label, ListItem, ListView, Markdown, Static
+from textual.widgets import Button, DataTable, Footer, Header, Label, ListItem, ListView, Markdown, Static
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
@@ -66,8 +66,17 @@ class KriyaApp(App[None]):
     }
 
     #approvals {
-        height: 12;
+        height: 14;
         border: solid $accent;
+    }
+
+    #global-actions,
+    #approval-actions {
+        height: 3;
+    }
+
+    Button {
+        margin: 0 1;
     }
 
     #approval-preview {
@@ -94,12 +103,19 @@ class KriyaApp(App[None]):
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
+        with Horizontal(id="global-actions"):
+            yield Button("Poll", id="poll-button", variant="primary")
+            yield Button("Sync Tasks", id="sync-button")
         with Horizontal(id="main"):
             yield ListView(id="rail")
             yield Markdown("# Kriya OS\n\nLoading state...", id="detail")
         with Vertical(id="approvals"):
             yield Label("Approvals")
             yield DataTable(id="approval-table")
+            with Horizontal(id="approval-actions"):
+                yield Button("Approve", id="approve-button", variant="success")
+                yield Button("Reject", id="reject-button", variant="error")
+                yield Button("Execute", id="execute-button", variant="warning")
         yield Markdown("# Approval\n\nNo approval selected.", id="approval-preview")
         yield Static("Ready", id="status")
         yield Footer()
@@ -126,6 +142,18 @@ class KriyaApp(App[None]):
 
     def on_data_table_row_selected(self, _event: DataTable.RowSelected) -> None:
         self.preview_selected_approval()
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        actions = {
+            "poll-button": self.action_poll,
+            "sync-button": self.action_sync_tasks,
+            "approve-button": self.action_approve_approval,
+            "reject-button": self.action_reject_approval,
+            "execute-button": self.action_execute_approval,
+        }
+        action = actions.get(event.button.id or "")
+        if action:
+            action()
 
     def action_select_or_preview(self) -> None:
         focused = self.focused
